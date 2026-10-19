@@ -4,10 +4,12 @@ import React from 'react';
 import { LayoutGrid, StretchHorizontal } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { setProductTableViewMode } from '../../store/slices/ui-slice';
+import { useTranslation } from '../../i18n';
 
 export const ViewModeToggle: React.FC = () => {
   const dispatch = useAppDispatch();
   const currentMode = useAppSelector((state) => state.ui.productTableViewMode);
+  const { t } = useTranslation();
 
   return (
     <div
@@ -36,10 +38,10 @@ export const ViewModeToggle: React.FC = () => {
           color: currentMode === 'optimized-grid' ? '#ffffff' : '#546e7a',
           transition: 'all 0.15s',
         }}
-        title="Оптимизированный вид (вмещается на 100% без скролла)"
+        title={t.products.viewOptimized}
       >
         <LayoutGrid size={14} />
-        Optimized Fit
+        {t.products.viewOptimized}
       </button>
 
       <button
@@ -57,10 +59,10 @@ export const ViewModeToggle: React.FC = () => {
           color: currentMode === 'classic-scroll' ? '#ffffff' : '#546e7a',
           transition: 'all 0.15s',
         }}
-        title="Классический вид (1-в-1 со скриншота с горизонтальным скроллом)"
+        title={t.products.viewClassic}
       >
         <StretchHorizontal size={14} />
-        Classic (2542px)
+        {t.products.viewClassic}
       </button>
     </div>
   );

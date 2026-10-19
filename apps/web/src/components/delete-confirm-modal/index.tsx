@@ -5,6 +5,7 @@ import { X, Trash2 } from 'lucide-react';
 import styles from './delete-confirm-modal.module.scss';
 import { Order } from '@dzencode/contracts';
 import { getStaticUrl } from '../../utils/url';
+import { useTranslation } from '../../i18n';
 
 interface DeleteConfirmModalProps {
   order: Order | null;
@@ -21,6 +22,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   loading = false,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen || !order) return null;
 
   const firstProduct = order.products?.[0];
@@ -35,14 +37,14 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           type="button"
           className={styles.closeButton}
           onClick={onClose}
-          title="Закрыть"
+          title={t.orders.close}
         >
           <X size={18} />
         </button>
 
         <div className={styles.modalBody}>
           <h3 className={styles.modalTitle}>
-            Вы уверены, что хотите удалить этот приход?
+            {t.orders.deleteOrderConfirmTitle}
           </h3>
 
           <div className={styles.previewRow}>
@@ -63,7 +65,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                 {firstProduct?.title || order.title}
               </span>
               <span className={styles.previewSub}>
-                {firstProduct ? `SN-${firstProduct.serialNumber}` : `Продуктов: ${order.productsCount}`}
+                {firstProduct ? `SN-${firstProduct.serialNumber}` : `${t.orders.productsCountPrefix}${order.productsCount}`}
               </span>
             </div>
           </div>
@@ -76,7 +78,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             onClick={onClose}
             disabled={loading}
           >
-            ОТМЕНИТЬ
+            {t.orders.cancel}
           </button>
 
           <button
@@ -86,7 +88,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             disabled={loading}
           >
             <Trash2 size={16} />
-            {loading ? 'УДАЛЕНИЕ...' : 'УДАЛИТЬ'}
+            {loading ? t.orders.deleting : t.orders.delete}
           </button>
         </div>
       </div>

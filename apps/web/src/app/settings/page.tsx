@@ -2,15 +2,15 @@
 
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '../../store';
-import { setLanguage, Language } from '../../store/slices/ui-slice';
 import { demoLoginThunk, logout } from '../../store/slices/auth-slice';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
 import { getApiUrl } from '../../utils/url';
+import { useTranslation, Language } from '../../i18n';
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const currentLang = useAppSelector((state) => state.ui.language);
+  const { t, currentLang, changeLanguage } = useTranslation();
 
   const languages: { code: Language; label: string }[] = [
     { code: 'ru', label: 'Русский (RU)' },
@@ -21,7 +21,7 @@ export default function SettingsPage() {
   return (
     <div style={{ maxWidth: 780, display: 'flex', flexDirection: 'column', gap: 28 }}>
       <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-        Настройки приложения
+        {t.settings.title}
       </h1>
 
       {/* 1. Language i18n */}
@@ -35,10 +35,10 @@ export default function SettingsPage() {
         }}
       >
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2c3c44', marginBottom: 12 }}>
-          Язык интерфейса (i18n)
+          {t.settings.langTitle}
         </h3>
         <p style={{ fontSize: 13, color: '#546e7a', marginBottom: 16 }}>
-          Выберите язык для отображения дат, валют и локализованных заголовков.
+          {t.settings.langDesc}
         </p>
 
         <div style={{ display: 'flex', gap: 12 }}>
@@ -46,7 +46,7 @@ export default function SettingsPage() {
             <button
               key={l.code}
               type="button"
-              onClick={() => dispatch(setLanguage(l.code))}
+              onClick={() => changeLanguage(l.code)}
               style={{
                 padding: '8px 16px',
                 borderRadius: 4,
@@ -76,10 +76,10 @@ export default function SettingsPage() {
         }}
       >
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2c3c44', marginBottom: 12 }}>
-          Режим отображения таблицы продуктов
+          {t.settings.tableModeTitle}
         </h3>
         <p style={{ fontSize: 13, color: '#546e7a', marginBottom: 16 }}>
-          Оптимизированный адаптивный вид (1434px без скролла) либо классический вид с оригинального скриншота (2542px).
+          {t.settings.tableModeDesc}
         </p>
         <ViewModeToggle />
       </div>
@@ -95,19 +95,19 @@ export default function SettingsPage() {
         }}
       >
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2c3c44', marginBottom: 12 }}>
-          Google OAuth 2.0 & Профиль
+          {t.settings.authTitle}
         </h3>
         <p style={{ fontSize: 13, color: '#546e7a', marginBottom: 16 }}>
-          Токен авторизации сохраняется в <code>localStorage</code> и передается через заголовок <code>Authorization: Bearer</code>.
+          {t.settings.authDesc}
         </p>
 
         {isAuthenticated && user ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 14, color: '#2c3c44' }}>
-              Вы вошли как: <strong>{user.fullName}</strong> ({user.email})
+              {t.settings.loggedInAs} <strong>{user.fullName}</strong> ({user.email})
             </div>
             <div style={{ fontSize: 12, color: '#8bc34a', fontWeight: 600 }}>
-              Роль: {user.role}
+              {t.settings.role} {user.role}
             </div>
             <div>
               <button
@@ -122,7 +122,7 @@ export default function SettingsPage() {
                   color: '#ffffff',
                 }}
               >
-                Выйти из аккаунта
+                {t.settings.logout}
               </button>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function SettingsPage() {
                 textDecoration: 'none',
               }}
             >
-              Войти через Google OAuth
+              {t.settings.loginWithGoogle}
             </a>
           </div>
         )}

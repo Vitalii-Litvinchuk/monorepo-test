@@ -11,6 +11,7 @@ import {
 } from '@dzencode/contracts';
 import { ProductTableViewMode } from '../../store/slices/ui-slice';
 import { getStaticUrl } from '../../utils/url';
+import { useTranslation } from '../../i18n';
 
 interface ProductRowProps {
   product: Product;
@@ -23,44 +24,34 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
   viewMode = 'optimized-grid',
   onDeleteClick,
 }) => {
+  const {
+    t,
+    formatDateGeneral,
+    formatDateShort,
+    formatDateFull,
+    formatNumber,
+  } = useTranslation();
+
   const isRepair = product.operationalStatus === ProductOperationalStatus.IN_REPAIR;
-  const statusText = isRepair ? 'В ремонте' : 'свободен';
+  const statusText = isRepair ? t.products.statusInRepair : t.products.statusAvailable;
   const statusClass = isRepair ? styles.repair : styles.available;
 
   const conditionText =
     product.condition === ProductCondition.NEW
-      ? 'новый'
+      ? t.products.conditionNew
       : product.condition === ProductCondition.USED
-        ? 'Б / У'
-        : 'восстановл.';
+        ? t.products.conditionUsed
+        : t.products.conditionRefurbished;
 
   const gStartDate = product.guarantee?.start ? new Date(product.guarantee.start) : null;
   const gEndDate = product.guarantee?.end ? new Date(product.guarantee.end) : null;
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return '—';
-    const d = String(date.getDate()).padStart(2, '0');
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const y = date.getFullYear();
-    return `${d} / ${m} / ${y}`;
-  };
-
   const cDate = product.createdAt ? new Date(product.createdAt) : new Date();
-  const monthsRu = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-  const cd = String(cDate.getDate()).padStart(2, '0');
-  const cm = monthsRu[cDate.getMonth()];
-  const cy = cDate.getFullYear();
-  const cMonthNum = String(cDate.getMonth() + 1).padStart(2, '0');
+  const shortCreatedDate = formatDateShort(cDate);
+  const fullCreatedDate = formatDateFull(cDate);
 
   const usdPrice = product.prices?.find((p) => p.currencyCode === CurrencyCode.USD)?.value || 0;
   const uahPrice = product.prices?.find((p) => p.currencyCode === CurrencyCode.UAH)?.value || 0;
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('ru-RU', {
-      minimumFractionDigits: num % 1 !== 0 ? 2 : 0,
-      maximumFractionDigits: 2,
-    });
-  };
 
   if (viewMode === 'classic-scroll') {
     // Exact 1-to-1 match to products-list.png layout (2542px width)
@@ -93,12 +84,12 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
 
         <div className={`${styles.guaranteeCol} ${styles.classicWidth}`}>
           <div className={styles.guaranteeRow}>
-            <span>с</span>
-            <span className="tabular-nums">{formatDate(gStartDate)}</span>
+            <span>{t.products.guaranteeFrom}</span>
+            <span className="tabular-nums">{formatDateGeneral(gStartDate)}</span>
           </div>
           <div className={styles.guaranteeRow}>
-            <span>по</span>
-            <span className="tabular-nums">{formatDate(gEndDate)}</span>
+            <span>{t.products.guaranteeTo}</span>
+            <span className="tabular-nums">{formatDateGeneral(gEndDate)}</span>
           </div>
         </div>
 
@@ -129,10 +120,10 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
 
         <div className={`${styles.dateCol} ${styles.classicWidth}`}>
           <span className={`${styles.shortDate} tabular-nums`}>
-            {cd} / {cMonthNum}
+            {shortCreatedDate}
           </span>
           <span className={`${styles.fullDate} tabular-nums`}>
-            {cd} / {cm} / {cy}
+            {fullCreatedDate}
           </span>
         </div>
 
@@ -140,7 +131,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
           type="button"
           className={styles.deleteBtn}
           onClick={() => onDeleteClick && onDeleteClick(product)}
-          title="Удалить продукт"
+          title={t.products.deleteProduct}
         >
           <Trash2 size={16} />
         </button>
@@ -183,12 +174,12 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
 
       <div className={styles.guaranteeCol}>
         <div className={styles.guaranteeRow}>
-          <span>с</span>
-          <span className="tabular-nums">{formatDate(gStartDate)}</span>
+          <span>{t.products.guaranteeFrom}</span>
+          <span className="tabular-nums">{formatDateGeneral(gStartDate)}</span>
         </div>
         <div className={styles.guaranteeRow}>
-          <span>по</span>
-          <span className="tabular-nums">{formatDate(gEndDate)}</span>
+          <span>{t.products.guaranteeTo}</span>
+          <span className="tabular-nums">{formatDateGeneral(gEndDate)}</span>
         </div>
       </div>
 
@@ -204,15 +195,15 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
       <div className={styles.badgeGroup}>
         <span
           className={styles.orderCol}
-          title={`Приход: ${product.orderTitle || '—'}`}
+          title={`${t.products.bindingOrder} ${product.orderTitle || '—'}`}
         >
           📦 {product.orderTitle || '—'}
         </span>
         <span
           className={styles.userCol}
-          title={`Ответственный: ${product.assignedUserName || 'Не назначен'}`}
+          title={`${t.products.bindingUser} ${product.assignedUserName || t.products.notAssigned}`}
         >
-          👤 {product.assignedUserName || 'Не назначен'}
+          👤 {product.assignedUserName || t.products.notAssigned}
         </span>
       </div>
 
@@ -220,7 +211,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         type="button"
         className={styles.deleteBtn}
         onClick={() => onDeleteClick && onDeleteClick(product)}
-        title="Удалить продукт"
+        title={t.products.deleteProduct}
       >
         <Trash2 size={16} />
       </button>

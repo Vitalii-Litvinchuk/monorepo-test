@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../services/api-client';
 import { User } from '@dzencode/contracts';
 import { UserCheck } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     apiClient.getUsers().then((data) => {
@@ -26,11 +28,11 @@ export default function UsersPage() {
           marginBottom: 32,
         }}
       >
-        Пользователи / {users.length}
+        {t.users.title} / {users.length}
       </h1>
 
       {loading ? (
-        <div style={{ color: '#90a4ae' }}>Загрузка пользователей...</div>
+        <div style={{ color: '#90a4ae' }}>{t.users.loading}</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16 }}>
           {users.map((u) => (
@@ -72,7 +74,7 @@ export default function UsersPage() {
                     marginTop: 6,
                   }}
                 >
-                  <UserCheck size={13} /> Роль: {u.role}
+                  <UserCheck size={13} /> {t.users.role} {u.role}
                 </span>
               </div>
             </div>

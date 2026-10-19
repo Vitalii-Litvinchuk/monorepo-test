@@ -15,6 +15,7 @@ import { ViewModeToggle } from '../../components/view-mode-toggle';
 import { ProductsSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
 import { Product } from '@dzencode/contracts';
+import { useTranslation } from '../../i18n';
 
 export default function ProductsPage() {
   const dispatch = useAppDispatch();
@@ -29,6 +30,7 @@ export default function ProductsPage() {
   const viewMode = useAppSelector((state) => state.ui.productTableViewMode);
   const globalSearch = useAppSelector((state) => state.ui.globalSearch);
   const debouncedSearch = useDebounce(globalSearch, 280);
+  const { t } = useTranslation();
 
   // Fetch filter metadata only once if not loaded
   useEffect(() => {
@@ -53,11 +55,11 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = useCallback(
     async (product: Product) => {
-      if (confirm(`Вы уверены, что хотите удалить продукт "${product.title}"?`)) {
+      if (confirm(`${t.products.deleteConfirm} "${product.title}"?`)) {
         await dispatch(deleteProduct(product.id));
       }
     },
-    [dispatch],
+    [dispatch, t.products.deleteConfirm],
   );
 
   return (
@@ -73,13 +75,13 @@ export default function ProductsPage() {
         }}
       >
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-          Продукты / {products.length}
+          {t.products.title} / {products.length}
         </h1>
 
         {/* Filter 1: Type */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <label style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
-            Тип:
+            {t.products.type}
           </label>
           <select
             value={selectedType}
@@ -97,10 +99,10 @@ export default function ProductsPage() {
               cursor: 'pointer',
             }}
           >
-            <option value="all">Все типы</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            <option value="all">{t.products.allTypes}</option>
+            {types.map((tVal) => (
+              <option key={tVal} value={tVal}>
+                {tVal}
               </option>
             ))}
           </select>
@@ -109,7 +111,7 @@ export default function ProductsPage() {
         {/* Filter 2: Specification */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <label style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
-            Спецификация:
+            {t.products.specification}
           </label>
           <select
             value={selectedSpecification}
@@ -127,7 +129,7 @@ export default function ProductsPage() {
               cursor: 'pointer',
             }}
           >
-            <option value="all">Все спецификации</option>
+            <option value="all">{t.products.allSpecifications}</option>
             {specifications.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -169,11 +171,11 @@ export default function ProductsPage() {
           >
             <span />
             <span />
-            <span>Наименование / Серийный №</span>
-            <span>Статус / Состояние</span>
-            <span>Гарантия</span>
-            <span>Стоимость</span>
-            <span>Привязка (Приход / Ответственный)</span>
+            <span>{t.products.colTitle}</span>
+            <span>{t.products.colStatus}</span>
+            <span>{t.products.colGuarantee}</span>
+            <span>{t.products.colPrice}</span>
+            <span>{t.products.colBinding}</span>
             <span />
           </div>
         )}
@@ -206,7 +208,7 @@ export default function ProductsPage() {
                 maxWidth: '100%',
               }}
             >
-              Продуктов по выбранным фильтрам не найдено.
+              {t.products.empty}
             </div>
           )}
         </div>

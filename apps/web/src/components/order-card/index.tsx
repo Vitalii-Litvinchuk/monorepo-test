@@ -4,6 +4,7 @@ import React from 'react';
 import { List, Trash2, ChevronRight } from 'lucide-react';
 import styles from './order-card.module.scss';
 import { Order, CurrencyCode } from '@dzencode/contracts';
+import { useTranslation } from '../../i18n';
 
 interface OrderCardProps {
   order: Order;
@@ -20,26 +21,14 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
   onSelect,
   onDeleteClick,
 }) => {
+  const { t, formatDateShort, formatDateFull, formatNumber } = useTranslation();
   const dateObj = new Date(order.createdAt);
 
-  const monthsRu = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const monthNum = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const monthName = monthsRu[dateObj.getMonth()];
-  const year = dateObj.getFullYear();
-
-  const shortDate = `${day} / ${monthNum}`;
-  const fullDate = `${day} / ${monthName} / ${year}`;
+  const shortDate = formatDateShort(dateObj);
+  const fullDate = formatDateFull(dateObj);
 
   const usdPrice = order.totalPrices?.find((p) => p.currencyCode === CurrencyCode.USD)?.value || 0;
   const uahPrice = order.totalPrices?.find((p) => p.currencyCode === CurrencyCode.UAH)?.value || 0;
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('ru-RU', {
-      minimumFractionDigits: num % 1 !== 0 ? 2 : 0,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const handleCardClick = () => {
     if (onSelect) {
@@ -70,7 +59,7 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
         type="button"
         className={styles.listIconBtn}
         onClick={handleCardClick}
-        title="Просмотреть продукты прихода"
+        title={t.orders.viewProducts}
       >
         <List size={18} />
       </button>
@@ -79,7 +68,7 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
         <span className={`${styles.productsCountNumber} tabular-nums`}>
           {order.productsCount}
         </span>
-        <span className={styles.productsCountLabel}>Продукта</span>
+        <span className={styles.productsCountLabel}>{t.orders.products}</span>
       </div>
 
       <div className={styles.dateCol}>
@@ -105,7 +94,7 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
               e.stopPropagation();
               if (onDeleteClick) onDeleteClick(order);
             }}
-            title="Удалить приход"
+            title={t.orders.deleteOrder}
           >
             <Trash2 size={16} />
           </button>

@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { apiClient } from '../../services/api-client';
 import { Group } from '@dzencode/contracts';
 import { Folder } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     apiClient.getGroups().then((data) => {
@@ -26,11 +28,11 @@ export default function GroupsPage() {
           marginBottom: 32,
         }}
       >
-        Группы / {groups.length}
+        {t.groups.title} / {groups.length}
       </h1>
 
       {loading ? (
-        <div style={{ color: '#90a4ae' }}>Загрузка групп...</div>
+        <div style={{ color: '#90a4ae' }}>{t.groups.loading}</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16 }}>
           {groups.map((group) => (
@@ -79,7 +81,7 @@ export default function GroupsPage() {
                   color: '#8bc34a',
                 }}
               >
-                Продуктов в группе: {group.productsCount}
+                {t.groups.productsInGroup} {group.productsCount}
               </div>
             </div>
           ))}

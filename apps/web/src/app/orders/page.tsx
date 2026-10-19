@@ -16,6 +16,7 @@ import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
 import { OrdersSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
 import { Order } from '@dzencode/contracts';
+import { useTranslation } from '../../i18n';
 
 export default function OrdersPage() {
   const dispatch = useAppDispatch();
@@ -24,6 +25,7 @@ export default function OrdersPage() {
   );
   const globalSearch = useAppSelector((state) => state.ui.globalSearch);
   const debouncedSearch = useDebounce(globalSearch, 250);
+  const { t } = useTranslation();
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -79,12 +81,12 @@ export default function OrdersPage() {
   }, [dispatch, orderToDelete]);
 
   const handleAddOrder = useCallback(async () => {
-    const title = prompt('Введите название нового прихода:');
+    const title = prompt(t.orders.addOrderPrompt);
     if (title && title.trim()) {
       await dispatch(createOrder({ title: title.trim() }));
       dispatch(fetchOrders());
     }
-  }, [dispatch]);
+  }, [dispatch, t.orders.addOrderPrompt]);
 
   return (
     <div>
@@ -112,13 +114,13 @@ export default function OrdersPage() {
             color: '#ffffff',
             transition: 'transform 0.15s',
           }}
-          title="Добавить новый приход"
+          title={t.orders.addOrder}
         >
           <Plus size={20} />
         </button>
 
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-          Приходы / {orders.length}
+          {t.orders.title} / {orders.length}
         </h1>
       </div>
 
@@ -169,7 +171,7 @@ export default function OrdersPage() {
                 color: '#90a4ae',
               }}
             >
-              Приходов не найдено. Нажмите +, чтобы добавить новый приход.
+              {t.orders.empty}
             </div>
           )}
         </div>
@@ -180,7 +182,7 @@ export default function OrdersPage() {
             order={selectedOrder}
             onClose={handleCloseDetail}
             onAddProduct={() => {
-              alert('Используйте API или форму для добавления продуктов в этот приход.');
+              alert(t.orders.addProductPrompt);
             }}
           />
         )}

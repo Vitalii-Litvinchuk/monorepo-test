@@ -9,6 +9,7 @@ import { setGlobalSearch } from '../../store/slices/ui-slice';
 import { demoLoginThunk, logout } from '../../store/slices/auth-slice';
 import { getSocketClient, WS_EVENTS } from '../../services/socket-client';
 import { getApiUrl } from '../../utils/url';
+import { useTranslation, Language } from '../../i18n';
 
 export const TopMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +18,14 @@ export const TopMenu: React.FC = () => {
   );
   const globalSearch = useAppSelector((state) => state.ui.globalSearch);
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const {
+    t,
+    currentLang,
+    changeLanguage,
+    formatDayOfWeek,
+    formatDateFull,
+    formatTime,
+  } = useTranslation();
 
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
@@ -44,24 +53,11 @@ export const TopMenu: React.FC = () => {
     }
   }, [dispatch]);
 
-  const formatDayOfWeek = (date: Date) => {
-    const daysRu = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-    return daysRu[date.getDay()];
-  };
-
-  const formatDateString = (date: Date) => {
-    const monthsRu = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = monthsRu[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month}, ${year}`;
-  };
-
-  const formatTimeString = (date: Date) => {
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+  const languages: { code: Language; label: string }[] = [
+    { code: 'ru', label: 'RU' },
+    { code: 'ua', label: 'UA' },
+    { code: 'en', label: 'EN' },
+  ];
 
   return (
     <header className={styles.header}>
@@ -80,7 +76,7 @@ export const TopMenu: React.FC = () => {
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Поиск"
+            placeholder={t.topMenu.searchPlaceholder}
             value={globalSearch}
             onChange={(e) => dispatch(setGlobalSearch(e.target.value))}
           />
@@ -88,24 +84,39 @@ export const TopMenu: React.FC = () => {
       </div>
 
       <div className={styles.rightSection}>
+        {/* Quick Language Switcher */}
+        <div className={styles.langSwitch}>
+          {languages.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              className={`${styles.langBtn} ${currentLang === l.code ? styles.activeLang : ''}`}
+              onClick={() => changeLanguage(l.code)}
+              title={`Switch language to ${l.code.toUpperCase()}`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+
         <div className={styles.timeContainer}>
           <span className={styles.dayOfWeek}>
             {currentTime ? formatDayOfWeek(currentTime) : '...'}
           </span>
           <div className={styles.dateTimeRow}>
             <span className={styles.dateText}>
-              {currentTime ? formatDateString(currentTime) : '...'}
+              {currentTime ? formatDateFull(currentTime) : '...'}
             </span>
             <Clock className={styles.clockIcon} />
             <span className={`${styles.timeText} tabular-nums`}>
-              {currentTime ? formatTimeString(currentTime) : '...'}
+              {currentTime ? formatTime(currentTime) : '...'}
             </span>
           </div>
         </div>
 
-        <div className={styles.sessionBadge} title="Количество активных вкладок приложения в реальном времени">
+        <div className={styles.sessionBadge} title={t.topMenu.activeSessionsTitle}>
           <span className={styles.sessionDot} />
-          <span>{activeSessionsCount} active</span>
+          <span>{activeSessionsCount} {t.topMenu.active}</span>
         </div>
 
         {isAuthenticated && user ? (
@@ -117,7 +128,7 @@ export const TopMenu: React.FC = () => {
               className={styles.logoutButton}
               onClick={() => dispatch(logout())}
             >
-              Выйти
+              {t.topMenu.logout}
             </button>
           </div>
         ) : (
@@ -125,7 +136,7 @@ export const TopMenu: React.FC = () => {
             <button
               className={styles.authButton}
               onClick={() => dispatch(demoLoginThunk())}
-              title="Войти в демо-режиме (без Google Cloud ключей)"
+              title="Demo login"
             >
               Demo Google Login
             </button>
@@ -133,7 +144,7 @@ export const TopMenu: React.FC = () => {
               href={getApiUrl('/api/auth/google')}
               className={styles.authButton}
               style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
-              title="Войти через Google OAuth 2.0"
+              title="Google OAuth 2.0"
             >
               Google OAuth
             </a>

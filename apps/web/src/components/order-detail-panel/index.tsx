@@ -8,6 +8,7 @@ import { useAppDispatch } from '../../store';
 import { deleteProduct } from '../../store/slices/products-slice';
 import { fetchOrders } from '../../store/slices/orders-slice';
 import { getStaticUrl } from '../../utils/url';
+import { useTranslation } from '../../i18n';
 
 interface OrderDetailPanelProps {
   order: Order;
@@ -21,10 +22,11 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
   onAddProduct,
 }) => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const products = order.products || [];
 
   const handleDeleteProduct = async (productId: string) => {
-    if (confirm('Удалить этот продукт из прихода?')) {
+    if (confirm(t.orders.deleteProductFromOrder)) {
       await dispatch(deleteProduct(productId));
       dispatch(fetchOrders());
     }
@@ -36,7 +38,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
         type="button"
         className={styles.closeButton}
         onClick={onClose}
-        title="Закрыть панель деталей"
+        title={t.orders.closeDetail}
       >
         <X size={18} />
       </button>
@@ -51,14 +53,14 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
           <span className={styles.plusCircle}>
             <Plus size={14} />
           </span>
-          Добавить продукт
+          {t.orders.addProduct}
         </button>
       </div>
 
       <div className={styles.productsList}>
         {products.map((product) => {
           const isRepair = product.operationalStatus === ProductOperationalStatus.IN_REPAIR;
-          const statusText = isRepair ? 'В ремонте' : 'Свободен';
+          const statusText = isRepair ? t.products.statusInRepair : t.orders.available;
           const statusClass = isRepair ? styles.repair : styles.available;
 
           return (
@@ -94,7 +96,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
                 type="button"
                 className={styles.deleteProductBtn}
                 onClick={() => handleDeleteProduct(product.id)}
-                title="Удалить продукт"
+                title={t.products.deleteProduct}
               >
                 <Trash2 size={15} />
               </button>
@@ -104,7 +106,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
 
         {products.length === 0 && (
           <div style={{ padding: '34px', color: '#90a4ae', fontSize: '14px' }}>
-            В этом приходе пока нет продуктов.
+            {t.orders.emptyDetailProducts}
           </div>
         )}
       </div>

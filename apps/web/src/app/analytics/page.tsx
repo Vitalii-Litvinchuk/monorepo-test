@@ -8,11 +8,13 @@ import { useAppDispatch, useAppSelector } from '../../store';
 import { fetchOrders } from '../../store/slices/orders-slice';
 import { fetchProducts } from '../../store/slices/products-slice';
 import { Cpu } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 export default function AnalyticsPage() {
   const dispatch = useAppDispatch();
   const products = useAppSelector((state) => state.products.items);
   const [workerResult, setWorkerResult] = useState<any>(null);
+  const { t, formatNumber } = useTranslation();
 
   useEffect(() => {
     dispatch(fetchOrders());
@@ -58,7 +60,7 @@ export default function AnalyticsPage() {
     <div style={{ maxWidth: 1434, display: 'flex', flexDirection: 'column', gap: 36 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-          Аналитика, Карты и Граф зависимостей
+          {t.analytics.title}
         </h1>
 
         {workerResult && (
@@ -76,8 +78,8 @@ export default function AnalyticsPage() {
               fontWeight: 600,
             }}
           >
-            <Cpu size={16} /> Web Worker агрегация: {workerResult.count} позиций (
-            {workerResult.totalUsd?.toLocaleString()} $ / {workerResult.totalUah?.toLocaleString()} UAH)
+            <Cpu size={16} /> {t.analytics.workerAggregation} {workerResult.count} {t.analytics.items} (
+            {formatNumber(workerResult.totalUsd || 0)} $ / {formatNumber(workerResult.totalUah || 0)} UAH)
           </div>
         )}
       </div>
