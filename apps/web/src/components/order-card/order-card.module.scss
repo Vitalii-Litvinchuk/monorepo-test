@@ -1,0 +1,174 @@
+.card {
+  height: var(--card-height);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: box-shadow 0.2s, border-color 0.2s, width 0.3s ease;
+  user-select: none;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(44, 60, 68, 0.08);
+  }
+
+  &.elevated {
+    box-shadow: 0 8px 20px rgba(44, 60, 68, 0.12);
+  }
+}
+
+.fullMode {
+  width: 1434px;
+  max-width: 100%;
+  padding: 0 28px;
+  justify-content: space-between;
+}
+
+.compactMode {
+  width: 467px;
+  padding: 0 0 0 20px;
+  cursor: pointer;
+
+  &.active {
+    border-color: #b0bec5;
+  }
+}
+
+.titleCol {
+  flex: 1;
+  min-width: 0;
+  padding-right: 20px;
+}
+
+.orderTitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: #b0bec5;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+
+  &:hover {
+    color: var(--color-text-primary);
+    text-decoration-color: var(--color-text-primary);
+  }
+}
+
+.listIconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  background: transparent;
+  flex-shrink: 0;
+  margin-right: 20px;
+
+  &:hover {
+    background-color: #f5f7f8;
+    color: var(--color-text-primary);
+  }
+}
+
+.productsCountCol {
+  display: flex;
+  flex-direction: column;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.productsCountNumber {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.productsCountLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.dateCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  flex-shrink: 0;
+  padding: 0 10px;
+}
+
+.dateShort {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.dateFull {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.priceCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 140px;
+  flex-shrink: 0;
+  padding: 0 14px;
+}
+
+.priceUsd {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.priceUah {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+
+  span {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-left: 4px;
+  }
+}
+
+.deleteBtn {
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s, background-color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--color-danger);
+    background-color: rgba(229, 57, 53, 0.08);
+  }
+}
+
+.activeChevronBox {
+  width: 42px;
+  height: 100%;
+  background-color: var(--color-border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  margin-left: auto;
+  flex-shrink: 0;
+}

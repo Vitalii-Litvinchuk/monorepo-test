@@ -1,0 +1,258 @@
+// Styles for both Optimized Grid View (1434px) and Classic Scroll View (2542px)
+
+.rowContainer {
+  height: var(--card-height);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(44, 60, 68, 0.08);
+  }
+}
+
+// 1. Optimized Grid View (fits into 1434px without scrollbar)
+.optimizedGrid {
+  width: 1434px;
+  max-width: 100%;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 28px 46px 2.2fr 1.2fr 1fr 1.2fr 1.5fr 36px;
+  align-items: center;
+  gap: 16px;
+}
+
+// 2. Classic Scroll View (exact match to products-list.png stretching to 2542px)
+.classicScroll {
+  width: 2542px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-shrink: 0;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.available {
+    background-color: var(--color-status-available);
+  }
+
+  &.repair {
+    background-color: var(--color-status-repair);
+  }
+}
+
+.photo {
+  width: 46px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.titleBox {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &.classicWidth {
+    width: 380px;
+  }
+}
+
+.productTitle {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #b0bec5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+
+  &:hover {
+    color: #1a252a;
+  }
+}
+
+.serialNumber {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.statusCol {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &.available {
+    color: var(--color-status-available);
+  }
+
+  &.repair {
+    color: var(--color-status-repair);
+  }
+
+  &.classicWidth {
+    width: 110px;
+  }
+}
+
+.guaranteeCol {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+
+  &.classicWidth {
+    width: 140px;
+  }
+
+  .guaranteeRow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    span:first-child {
+      color: var(--color-text-muted);
+      width: 18px;
+    }
+  }
+}
+
+.conditionCol {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+
+  &.classicWidth {
+    width: 90px;
+  }
+}
+
+.priceCol {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+
+  &.classicWidth {
+    width: 150px;
+  }
+
+  .priceUsd {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  .priceUah {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+
+    span {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
+.groupCol {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #cfd8dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.classicWidth {
+    width: 320px;
+  }
+}
+
+.userCol {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #cfd8dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.classicWidth {
+    width: 240px;
+  }
+}
+
+.orderCol {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #cfd8dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.classicWidth {
+    width: 320px;
+  }
+}
+
+.dateCol {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  align-items: center;
+
+  &.classicWidth {
+    width: 130px;
+  }
+
+  .shortDate {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  .fullDate {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.deleteBtn {
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--color-danger);
+    background-color: rgba(229, 57, 53, 0.08);
+  }
+}
+
+.badgeGroup {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+}

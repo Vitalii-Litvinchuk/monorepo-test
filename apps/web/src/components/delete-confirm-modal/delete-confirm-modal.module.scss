@@ -1,0 +1,143 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-overlay-backdrop);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modalContainer {
+  width: 791px;
+  max-width: 90vw;
+  background-color: var(--color-bg-surface);
+  border-radius: 4px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+  position: relative;
+  overflow: visible;
+}
+
+.closeButton {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  transition: transform 0.15s;
+  z-index: 10;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+}
+
+.modalBody {
+  padding: 28px 36px 20px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 24px;
+}
+
+.previewRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-divider);
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-status-available);
+  flex-shrink: 0;
+}
+
+.previewPhoto {
+  width: 48px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.previewInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.previewTitle {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: #b0bec5;
+}
+
+.previewSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.modalFooter {
+  height: 111px;
+  background-color: var(--color-brand-modal-footer);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 28px;
+  padding: 0 36px;
+}
+
+.cancelBtn {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 10px 16px;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.deleteBtn {
+  width: 176px;
+  height: 46px;
+  border-radius: 23px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+}
