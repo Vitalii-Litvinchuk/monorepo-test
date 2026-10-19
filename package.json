@@ -14,6 +14,7 @@
     "test": "turbo run test",
     "test:unit": "turbo run test:unit",
     "test:e2e": "turbo run test:e2e",
+    "test:load": "npm --prefix apps/api run test:load",
     "clean": "turbo run clean && rm -rf node_modules",
     "start": "turbo run start",
     "seed": "npm run seed --workspace=@dzencode/api",
