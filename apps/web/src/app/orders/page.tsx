@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
@@ -13,6 +13,8 @@ import {
 import { OrderCard } from '../../components/order-card';
 import { OrderDetailPanel } from '../../components/order-detail-panel';
 import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
+import { OrdersSkeletonList } from '../../components/skeleton';
+import { useDebounce } from '../../utils/use-debounce';
 import { Order } from '@dzencode/contracts';
 
 export default function OrdersPage() {
@@ -21,6 +23,7 @@ export default function OrdersPage() {
     (state) => state.orders,
   );
   const globalSearch = useAppSelector((state) => state.ui.globalSearch);
+  const debouncedSearch = useDebounce(globalSearch, 250);
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -28,32 +31,42 @@ export default function OrdersPage() {
     dispatch(fetchOrders());
   }, [dispatch]);
 
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId);
+  const selectedOrder = useMemo(
+    () => orders.find((o) => o.id === selectedOrderId),
+    [orders, selectedOrderId],
+  );
   const isSplitView = Boolean(selectedOrder);
 
-  // Filter by global search input
-  const filteredOrders = orders.filter((o) => {
-    if (!globalSearch.trim()) return true;
-    return o.title.toLowerCase().includes(globalSearch.toLowerCase().trim());
-  });
+  // Filter by debounced global search input with useMemo for high performance
+  const filteredOrders = useMemo(() => {
+    if (!debouncedSearch.trim()) return orders;
+    const term = debouncedSearch.toLowerCase().trim();
+    return orders.filter((o) => o.title.toLowerCase().includes(term));
+  }, [orders, debouncedSearch]);
 
-  const handleSelectOrder = (id: string) => {
-    if (selectedOrderId === id) {
-      dispatch(selectOrder(null));
-    } else {
-      dispatch(selectOrder(id));
-    }
-  };
+  const handleSelectOrder = useCallback(
+    (id: string) => {
+      if (selectedOrderId === id) {
+        dispatch(selectOrder(null));
+      } else {
+        dispatch(selectOrder(id));
+      }
+    },
+    [dispatch, selectedOrderId],
+  );
 
-  const handleCloseDetail = () => {
+  const handleCloseDetail = useCallback(() => {
     dispatch(selectOrder(null));
-  };
+  }, [dispatch]);
 
-  const handleOpenDelete = (order: Order) => {
-    dispatch(setOrderToDelete(order));
-  };
+  const handleOpenDelete = useCallback(
+    (order: Order) => {
+      dispatch(setOrderToDelete(order));
+    },
+    [dispatch],
+  );
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!orderToDelete) return;
     setIsDeleting(true);
     try {
@@ -63,15 +76,15 @@ export default function OrdersPage() {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [dispatch, orderToDelete]);
 
-  const handleAddOrder = async () => {
+  const handleAddOrder = useCallback(async () => {
     const title = prompt('Введите название нового прихода:');
     if (title && title.trim()) {
       await dispatch(createOrder({ title: title.trim() }));
       dispatch(fetchOrders());
     }
-  };
+  }, [dispatch]);
 
   return (
     <div>
@@ -131,7 +144,7 @@ export default function OrdersPage() {
           }}
         >
           {loading && orders.length === 0 && (
-            <div style={{ padding: 24, color: '#90a4ae' }}>Загрузка приходов...</div>
+            <OrdersSkeletonList count={6} isCompact={isSplitView} />
           )}
 
           {filteredOrders.map((order) => (

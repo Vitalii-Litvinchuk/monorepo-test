@@ -15,5 +15,6 @@ module.exports = {
     '^@dzencode/contracts$': '<rootDir>/../../packages/contracts/src',
     '^@dzencode/contracts/(.*)$': '<rootDir>/../../packages/contracts/src/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': '<rootDir>/test/style-mock.js',
   },
 };

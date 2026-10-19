@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -20,15 +21,18 @@ export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @Column({ name: 'serial_number' })
   serialNumber: number;
 
+  @Index()
   @Column({
     type: 'text',
     default: ProductCondition.NEW,
   })
   condition: ProductCondition;
 
+  @Index()
   @Column({
     name: 'operational_status',
     type: 'text',
@@ -39,9 +43,11 @@ export class ProductEntity {
   @Column()
   photo: string;
 
+  @Index()
   @Column()
   title: string;
 
+  @Index()
   @Column()
   type: string;
 
@@ -54,6 +60,7 @@ export class ProductEntity {
   @Column({ name: 'guarantee_end', type: 'datetime' })
   guaranteeEnd: Date;
 
+  @Index()
   @Column({ name: 'order_id' })
   orderId: string;
 
@@ -85,6 +92,7 @@ export class ProductEntity {
   })
   prices: ProductPriceEntity[];
 
+  @Index()
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

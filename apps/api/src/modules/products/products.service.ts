@@ -142,6 +142,7 @@ export class ProductsService {
     this.eventEmitter.emit(WS_EVENTS.PRODUCT_CREATED, result);
     this.sessionsGateway.broadcastEvent(WS_EVENTS.PRODUCT_CREATED, result);
 
+    this.invalidateMetadataCache();
     return result;
   }
 
@@ -158,27 +159,40 @@ export class ProductsService {
     this.eventEmitter.emit(WS_EVENTS.PRODUCT_DELETED, payload);
     this.sessionsGateway.broadcastEvent(WS_EVENTS.PRODUCT_DELETED, payload);
 
+    this.invalidateMetadataCache();
     return { success: true, id };
   }
 
+  private cachedTypes: string[] | null = null;
+  private cachedSpecs: string[] | null = null;
+
+  private invalidateMetadataCache() {
+    this.cachedTypes = null;
+    this.cachedSpecs = null;
+  }
+
   async getTypes(): Promise<string[]> {
+    if (this.cachedTypes) return this.cachedTypes;
     const result = await this.productRepo
       .createQueryBuilder('product')
       .select('DISTINCT(product.type)', 'type')
       .orderBy('product.type', 'ASC')
       .getRawMany();
 
-    return result.map((r) => r.type).filter(Boolean);
+    this.cachedTypes = result.map((r) => r.type).filter(Boolean);
+    return this.cachedTypes;
   }
 
   async getSpecifications(): Promise<string[]> {
+    if (this.cachedSpecs) return this.cachedSpecs;
     const result = await this.productRepo
       .createQueryBuilder('product')
       .select('DISTINCT(product.specification)', 'specification')
       .orderBy('product.specification', 'ASC')
       .getRawMany();
 
-    return result.map((r) => r.specification).filter(Boolean);
+    this.cachedSpecs = result.map((r) => r.specification).filter(Boolean);
+    return this.cachedSpecs;
   }
 
   private mapEntityToDto(item: ProductEntity): Product {

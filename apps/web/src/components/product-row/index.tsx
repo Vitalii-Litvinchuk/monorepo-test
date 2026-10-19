@@ -18,7 +18,7 @@ interface ProductRowProps {
   onDeleteClick?: (product: Product) => void;
 }
 
-export const ProductRow: React.FC<ProductRowProps> = ({
+export const ProductRow: React.FC<ProductRowProps> = React.memo(({
   product,
   viewMode = 'optimized-grid',
   onDeleteClick,
@@ -73,6 +73,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({
           src={getStaticUrl(product.photo)}
           alt={product.title}
           className={styles.photo}
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             (e.target as HTMLElement).style.display = 'none';
           }}
@@ -156,6 +158,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({
         src={getStaticUrl(product.photo)}
         alt={product.title}
         className={styles.photo}
+        loading="lazy"
+        decoding="async"
         onError={(e) => {
           (e.target as HTMLElement).style.display = 'none';
         }}
@@ -222,6 +226,6 @@ export const ProductRow: React.FC<ProductRowProps> = ({
       </button>
     </div>
   );
-};
+});
 
 export default ProductRow;

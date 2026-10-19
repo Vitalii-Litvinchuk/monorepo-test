@@ -1,0 +1,97 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmerBox {
+  background: linear-gradient(
+    90deg,
+    #e8ecef 25%,
+    #f7f9fa 50%,
+    #e8ecef 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+// 1. Order Card Skeleton
+.orderCardSkeleton {
+  height: var(--card-height);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+
+  &.fullMode {
+    width: 1434px;
+    max-width: 100%;
+    padding: 0 28px;
+    justify-content: space-between;
+  }
+
+  &.compactMode {
+    width: 467px;
+    padding: 0 20px;
+    gap: 16px;
+  }
+}
+
+.circle {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pill {
+  border-radius: 3px;
+}
+
+// 2. Product Row Skeleton
+.productRowSkeleton {
+  height: var(--card-height);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  &.optimizedGrid {
+    width: 1434px;
+    max-width: 100%;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 28px 46px 2.2fr 1.2fr 1fr 1.2fr 1.5fr 36px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &.classicScroll {
+    width: 2542px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-shrink: 0;
+  }
+}
+
+// 3. Detail Panel Skeleton
+.detailPanelSkeleton {
+  flex: 1;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 4px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 400px;
+}

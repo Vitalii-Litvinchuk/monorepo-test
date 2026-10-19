@@ -13,7 +13,7 @@ interface OrderCardProps {
   onDeleteClick?: (order: Order) => void;
 }
 
-export const OrderCard: React.FC<OrderCardProps> = ({
+export const OrderCard: React.FC<OrderCardProps> = React.memo(({
   order,
   isCompact = false,
   isActive = false,
@@ -119,6 +119,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default OrderCard;

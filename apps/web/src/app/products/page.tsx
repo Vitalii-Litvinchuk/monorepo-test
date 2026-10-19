@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   fetchProducts,
@@ -12,6 +12,8 @@ import {
 } from '../../store/slices/products-slice';
 import { ProductRow } from '../../components/product-row';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
+import { ProductsSkeletonList } from '../../components/skeleton';
+import { useDebounce } from '../../utils/use-debounce';
 import { Product } from '@dzencode/contracts';
 
 export default function ProductsPage() {
@@ -26,27 +28,37 @@ export default function ProductsPage() {
   } = useAppSelector((state) => state.products);
   const viewMode = useAppSelector((state) => state.ui.productTableViewMode);
   const globalSearch = useAppSelector((state) => state.ui.globalSearch);
+  const debouncedSearch = useDebounce(globalSearch, 280);
 
+  // Fetch filter metadata only once if not loaded
   useEffect(() => {
-    dispatch(fetchProductTypes());
-    dispatch(fetchProductSpecifications());
-  }, [dispatch]);
+    if (types.length === 0) {
+      dispatch(fetchProductTypes());
+    }
+    if (specifications.length === 0) {
+      dispatch(fetchProductSpecifications());
+    }
+  }, [dispatch, types.length, specifications.length]);
 
+  // Fetch products with debounced search query to prevent server overload
   useEffect(() => {
     dispatch(
       fetchProducts({
         type: selectedType,
         specification: selectedSpecification,
-        search: globalSearch,
+        search: debouncedSearch,
       }),
     );
-  }, [dispatch, selectedType, selectedSpecification, globalSearch]);
+  }, [dispatch, selectedType, selectedSpecification, debouncedSearch]);
 
-  const handleDeleteProduct = async (product: Product) => {
-    if (confirm(`Вы уверены, что хотите удалить продукт "${product.title}"?`)) {
-      await dispatch(deleteProduct(product.id));
-    }
-  };
+  const handleDeleteProduct = useCallback(
+    async (product: Product) => {
+      if (confirm(`Вы уверены, что хотите удалить продукт "${product.title}"?`)) {
+        await dispatch(deleteProduct(product.id));
+      }
+    },
+    [dispatch],
+  );
 
   return (
     <div>
@@ -168,18 +180,18 @@ export default function ProductsPage() {
 
         {/* Products rows */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {loading && products.length === 0 && (
-            <div style={{ padding: 24, color: '#90a4ae' }}>Загрузка продуктов...</div>
+          {loading && products.length === 0 ? (
+            <ProductsSkeletonList count={7} viewMode={viewMode} />
+          ) : (
+            products.map((product) => (
+              <ProductRow
+                key={product.id}
+                product={product}
+                viewMode={viewMode}
+                onDeleteClick={handleDeleteProduct}
+              />
+            ))
           )}
-
-          {products.map((product) => (
-            <ProductRow
-              key={product.id}
-              product={product}
-              viewMode={viewMode}
-              onDeleteClick={handleDeleteProduct}
-            />
-          ))}
 
           {!loading && products.length === 0 && (
             <div

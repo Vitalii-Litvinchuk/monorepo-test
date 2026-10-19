@@ -70,6 +70,8 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
                 src={getStaticUrl(product.photo)}
                 alt={product.title}
                 className={styles.productPhoto}
+                loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
