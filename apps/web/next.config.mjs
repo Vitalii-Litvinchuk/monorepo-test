@@ -1,19 +1,24 @@
+const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const cleanBasePath = rawBasePath.replace(/\/+$/, '').trim();
+const basePath = cleanBasePath ? (cleanBasePath.startsWith('/') ? cleanBasePath : `/${cleanBasePath}`) : undefined;
+const apiInternalUrl = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replace(/\/+$/, '');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  basePath,
+  assetPrefix: basePath,
   transpilePackages: ['@dzencode/contracts'],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
-        port: '4000',
-        pathname: '/static/**',
+        hostname: '**',
       },
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        pathname: '/**',
+        hostname: '**',
       },
     ],
   },
@@ -21,15 +26,15 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*',
+        destination: `${apiInternalUrl}/api/:path*`,
       },
       {
         source: '/static/:path*',
-        destination: 'http://localhost:4000/static/:path*',
+        destination: `${apiInternalUrl}/static/:path*`,
       },
       {
         source: '/graphql',
-        destination: 'http://localhost:4000/graphql',
+        destination: `${apiInternalUrl}/graphql`,
       },
     ];
   },

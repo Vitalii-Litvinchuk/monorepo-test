@@ -28,12 +28,32 @@ function getUploadsDir(): string {
   return fallback;
 }
 
+const uploadsDir = getUploadsDir();
+const customPrefix = process.env.BASE_PATH
+  ? `/${process.env.BASE_PATH.replace(/^\/+|\/+$/g, '')}/static`
+  : null;
+
+const staticConfigs = [
+  {
+    rootPath: uploadsDir,
+    serveRoot: '/static',
+  },
+  {
+    rootPath: uploadsDir,
+    serveRoot: '/test/static',
+  },
+];
+
+if (customPrefix && customPrefix !== '/static' && customPrefix !== '/test/static') {
+  staticConfigs.push({
+    rootPath: uploadsDir,
+    serveRoot: customPrefix,
+  });
+}
+
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: getUploadsDir(),
-      serveRoot: '/static',
-    }),
+    ServeStaticModule.forRoot(...staticConfigs),
   ],
   controllers: [UploadsController],
 })

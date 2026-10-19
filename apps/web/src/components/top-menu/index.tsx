@@ -8,6 +8,7 @@ import { setActiveSessionsCount } from '../../store/slices/session-slice';
 import { setGlobalSearch } from '../../store/slices/ui-slice';
 import { demoLoginThunk, logout } from '../../store/slices/auth-slice';
 import { getSocketClient, WS_EVENTS } from '../../services/socket-client';
+import { getApiUrl } from '../../utils/url';
 
 export const TopMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -129,7 +130,7 @@ export const TopMenu: React.FC = () => {
               Demo Google Login
             </button>
             <a
-              href="http://localhost:4000/api/auth/google"
+              href={getApiUrl('/api/auth/google')}
               className={styles.authButton}
               style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
               title="Войти через Google OAuth 2.0"

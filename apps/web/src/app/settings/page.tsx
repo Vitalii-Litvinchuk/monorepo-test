@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../store';
 import { setLanguage, Language } from '../../store/slices/ui-slice';
 import { demoLoginThunk, logout } from '../../store/slices/auth-slice';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
+import { getApiUrl } from '../../utils/url';
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch();
@@ -143,7 +144,7 @@ export default function SettingsPage() {
             </button>
 
             <a
-              href="http://localhost:4000/api/auth/google"
+              href={getApiUrl('/api/auth/google')}
               style={{
                 padding: '8px 16px',
                 borderRadius: 4,

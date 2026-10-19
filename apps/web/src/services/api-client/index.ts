@@ -9,8 +9,7 @@ import {
   ProductFilterQuery,
   User,
 } from '@dzencode/contracts';
-
-const API_BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:4000';
+import { getApiUrl } from '../../utils/url';
 
 class ApiClient {
   private getToken(): string | null {
@@ -29,7 +28,12 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : typeof window !== 'undefined'
+        ? getApiUrl(endpoint)
+        : `${process.env.API_INTERNAL_URL || 'http://localhost:4000'}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
     const response = await fetch(url, {
       ...options,
       headers,
@@ -153,7 +157,11 @@ class ApiClient {
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_BASE_URL}/api/uploads/image`, {
+    const uploadUrl = typeof window !== 'undefined'
+      ? getApiUrl('/api/uploads/image')
+      : `${process.env.API_INTERNAL_URL || 'http://localhost:4000'}/api/uploads/image`;
+
+    const res = await fetch(uploadUrl, {
       method: 'POST',
       headers,
       body: formData,

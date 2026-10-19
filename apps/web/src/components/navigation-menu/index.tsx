@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Settings } from 'lucide-react';
 import styles from './navigation-menu.module.scss';
 import { useAppSelector } from '../../store';
+import { getStaticUrl } from '../../utils/url';
 
 export const NavigationMenu: React.FC = () => {
   const pathname = usePathname();
@@ -20,7 +21,7 @@ export const NavigationMenu: React.FC = () => {
     { href: '/settings', label: 'НАСТРОЙКИ' },
   ];
 
-  const avatarSrc = user?.avatarUrl || '/static/7c9e6679-7425-40de-944b-e07fc1f90ae7.png';
+  const avatarSrc = getStaticUrl(user?.avatarUrl || '7c9e6679-7425-40de-944b-e07fc1f90ae7.png');
 
   return (
     <nav className={styles.sidebar}>
@@ -42,7 +43,8 @@ export const NavigationMenu: React.FC = () => {
 
       <ul className={styles.navList}>
         {navLinks.map((link) => {
-          const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+          const normPath = pathname.startsWith('/test') ? pathname.replace(/^\/test/, '') || '/' : pathname;
+          const isActive = normPath === link.href || normPath.startsWith(`${link.href}/`);
           return (
             <li key={link.href} className={styles.navItem}>
               <Link

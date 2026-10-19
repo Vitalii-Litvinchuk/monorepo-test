@@ -4,7 +4,11 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,11 +24,25 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@dzencode/contracts": ["../../packages/contracts/src"],
-      "@dzencode/contracts/*": ["../../packages/contracts/src/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@dzencode/contracts": [
+        "../../packages/contracts/src"
+      ],
+      "@dzencode/contracts/*": [
+        "../../packages/contracts/src/*"
+      ]
+    },
+    "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -10,6 +10,7 @@ import {
   CurrencyCode,
 } from '@dzencode/contracts';
 import { ProductTableViewMode } from '../../store/slices/ui-slice';
+import { getStaticUrl } from '../../utils/url';
 
 interface ProductRowProps {
   product: Product;
@@ -69,7 +70,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/static/${product.photo}`}
+          src={getStaticUrl(product.photo)}
           alt={product.title}
           className={styles.photo}
           onError={(e) => {
@@ -152,7 +153,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/static/${product.photo}`}
+        src={getStaticUrl(product.photo)}
         alt={product.title}
         className={styles.photo}
         onError={(e) => {

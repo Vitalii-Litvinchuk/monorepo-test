@@ -30,7 +30,8 @@ export class AuthController {
     const authData = this.authService.generateAuthResponse(user);
 
     // Redirect to frontend callback page which extracts token into localStorage
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = rawFrontendUrl.replace(/\/+$/, '');
     res.redirect(`${frontendUrl}/auth/callback?token=${encodeURIComponent(authData.accessToken)}`);
   }
 

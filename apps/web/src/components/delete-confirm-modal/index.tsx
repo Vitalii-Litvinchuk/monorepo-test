@@ -4,6 +4,7 @@ import React from 'react';
 import { X, Trash2 } from 'lucide-react';
 import styles from './delete-confirm-modal.module.scss';
 import { Order } from '@dzencode/contracts';
+import { getStaticUrl } from '../../utils/url';
 
 interface DeleteConfirmModalProps {
   order: Order | null;
@@ -49,7 +50,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/static/${firstProduct?.photo || '550e8400-e29b-41d4-a716-446655440000.png'}`}
+              src={getStaticUrl(firstProduct?.photo || '550e8400-e29b-41d4-a716-446655440000.png')}
               alt="Preview"
               className={styles.previewPhoto}
               onError={(e) => {

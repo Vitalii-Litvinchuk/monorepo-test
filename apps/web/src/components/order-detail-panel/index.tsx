@@ -7,6 +7,7 @@ import { Order, ProductOperationalStatus } from '@dzencode/contracts';
 import { useAppDispatch } from '../../store';
 import { deleteProduct } from '../../store/slices/products-slice';
 import { fetchOrders } from '../../store/slices/orders-slice';
+import { getStaticUrl } from '../../utils/url';
 
 interface OrderDetailPanelProps {
   order: Order;
@@ -66,7 +67,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
 
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/static/${product.photo}`}
+                src={getStaticUrl(product.photo)}
                 alt={product.title}
                 className={styles.productPhoto}
                 onError={(e) => {
