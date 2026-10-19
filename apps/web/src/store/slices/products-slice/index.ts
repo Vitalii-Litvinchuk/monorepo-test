@@ -49,6 +49,13 @@ export const fetchProductTypes = createAsyncThunk(
   },
 );
 
+export const createProductType = createAsyncThunk(
+  'products/createType',
+  async (type: string) => {
+    return await apiClient.createProductType(type);
+  },
+);
+
 export const fetchProductSpecifications = createAsyncThunk(
   'products/fetchSpecifications',
   async () => {
@@ -128,6 +135,10 @@ export const productsSlice = createSlice({
       })
       .addCase(fetchProductTypes.fulfilled, (state, action) => {
         state.types = action.payload;
+      })
+      .addCase(createProductType.fulfilled, (state, action) => {
+        state.types = action.payload;
+        state.selectedType = action.meta.arg;
       })
       .addCase(fetchProductSpecifications.fulfilled, (state, action) => {
         state.specifications = action.payload;

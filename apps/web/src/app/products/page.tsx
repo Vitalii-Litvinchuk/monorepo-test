@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Tag } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   fetchProducts,
   fetchProductTypes,
   fetchProductSpecifications,
+  createProductType,
   setSelectedType,
   setSelectedSpecification,
   setProductToEdit,
@@ -20,6 +21,9 @@ import { ProductRow } from '../../components/product-row';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
 import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
 import { ProductFormModal } from '../../components/product-form-modal';
+import { TypeCreateModal } from '../../components/type-create-modal';
+import { CustomSelect } from '../../components/custom-select';
+import { Tooltip } from '../../components/tooltip';
 import { ProductsSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
 import { Product, CreateProductDto, UpdateProductDto } from '@dzencode/contracts';
@@ -45,6 +49,7 @@ export default function ProductsPage() {
   const debouncedSearch = useDebounce(searchQuery, 250);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch filter metadata and orders if not loaded
@@ -60,7 +65,7 @@ export default function ProductsPage() {
     }
   }, [dispatch, types.length, specifications.length, orders.length]);
 
-  // Fetch products with debounced search query to prevent server overload
+  // Fetch products with debounced search query
   useEffect(() => {
     dispatch(
       fetchProducts({
@@ -93,9 +98,23 @@ export default function ProductsPage() {
     } else {
       await dispatch(createProduct(dto as CreateProductDto)).unwrap();
     }
+    // Refresh products and types
+    dispatch(fetchProductTypes());
     dispatch(
       fetchProducts({
         type: selectedType,
+        specification: selectedSpecification,
+        search: debouncedSearch,
+      }),
+    );
+  };
+
+  // Create Type Handler
+  const handleCreateType = async (typeName: string) => {
+    await dispatch(createProductType(typeName)).unwrap();
+    dispatch(
+      fetchProducts({
+        type: typeName,
         specification: selectedSpecification,
         search: debouncedSearch,
       }),
@@ -130,6 +149,16 @@ export default function ProductsPage() {
     }
   }, [dispatch, productToDelete, selectedType, selectedSpecification, debouncedSearch]);
 
+  const typeOptions = [
+    { value: 'all', label: t.products.allTypes },
+    ...types.map((tVal) => ({ value: tVal, label: tVal })),
+  ];
+
+  const specOptions = [
+    { value: 'all', label: t.products.allSpecifications },
+    ...specifications.map((s) => ({ value: s, label: s })),
+  ];
+
   return (
     <div>
       {/* Top filters and actions bar */}
@@ -138,31 +167,33 @@ export default function ProductsPage() {
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 20,
-          marginBottom: 28,
+          gap: 16,
+          marginBottom: 24,
         }}
       >
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            backgroundColor: 'var(--color-brand-primary)',
-            boxShadow: '0 0 0 4px rgba(139, 195, 74, 0.35)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'transform 0.15s',
-          }}
-          title={t.products.createProduct}
-        >
-          <Plus size={20} />
-        </button>
+        <Tooltip content={t.products.createProduct}>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              backgroundColor: 'var(--color-brand-primary)',
+              boxShadow: '0 0 0 4px rgba(139, 195, 74, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.15s',
+            }}
+            title={t.products.createProduct}
+          >
+            <Plus size={20} />
+          </button>
+        </Tooltip>
 
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
           {t.products.title} / {products.length}
@@ -178,7 +209,7 @@ export default function ProductsPage() {
             borderRadius: 4,
             padding: '0 12px',
             height: 34,
-            width: 260,
+            width: 250,
             maxWidth: '100%',
             boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.04)',
           }}
@@ -200,64 +231,55 @@ export default function ProductsPage() {
           />
         </div>
 
-        {/* Filter 1: Type */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {/* Filter 1: Type (CustomSelect with Action to Create Type) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>
             {t.products.type}
           </label>
-          <select
+          <CustomSelect
+            options={typeOptions}
             value={selectedType}
-            onChange={(e) => dispatch(setSelectedType(e.target.value))}
-            style={{
-              width: 220,
-              height: 34,
-              backgroundColor: '#ffffff',
-              border: '1px solid var(--color-border-card)',
-              borderRadius: 3,
-              padding: '0 10px',
-              fontSize: 13,
-              color: 'var(--color-text-primary)',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="all">{t.products.allTypes}</option>
-            {types.map((tVal) => (
-              <option key={tVal} value={tVal}>
-                {tVal}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => dispatch(setSelectedType(val))}
+            onActionClick={() => setIsTypeModalOpen(true)}
+            actionLabel="+ Створити новий тип..."
+            style={{ width: 200 }}
+          />
+          <Tooltip content="Створити новий тип продукту">
+            <button
+              type="button"
+              onClick={() => setIsTypeModalOpen(true)}
+              style={{
+                height: 34,
+                padding: '0 10px',
+                borderRadius: 4,
+                border: '1px solid var(--color-border-card)',
+                background: '#ffffff',
+                color: 'var(--color-brand-modal-footer)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <Tag size={13} />
+              <span>+ Тип</span>
+            </button>
+          </Tooltip>
         </div>
 
-        {/* Filter 2: Specification */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <label style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {/* Filter 2: Specification (CustomSelect) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <label style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>
             {t.products.specification}
           </label>
-          <select
+          <CustomSelect
+            options={specOptions}
             value={selectedSpecification}
-            onChange={(e) => dispatch(setSelectedSpecification(e.target.value))}
-            style={{
-              width: 220,
-              height: 34,
-              backgroundColor: '#ffffff',
-              border: '1px solid var(--color-border-card)',
-              borderRadius: 3,
-              padding: '0 10px',
-              fontSize: 13,
-              color: 'var(--color-text-primary)',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <option value="all">{t.products.allSpecifications}</option>
-            {specifications.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => dispatch(setSelectedSpecification(val))}
+            style={{ width: 220 }}
+          />
         </div>
 
         {/* Best Practice View Mode Switcher */}
@@ -274,7 +296,7 @@ export default function ProductsPage() {
           paddingBottom: 20,
         }}
       >
-        {/* Table column headers for Optimized Grid View */}
+        {/* Table column headers for Optimized Grid View (locked 8 tracks matching ProductRow) */}
         {viewMode === 'optimized-grid' && (
           <div
             style={{
@@ -283,7 +305,7 @@ export default function ProductsPage() {
               padding: '0 24px 8px',
               display: 'grid',
               gridTemplateColumns:
-                '28px 46px minmax(220px, 2.2fr) 130px 140px 130px minmax(180px, 1.5fr) 76px',
+                '24px 50px minmax(280px, 2.4fr) 140px 150px 150px minmax(220px, 1.8fr) 76px',
               gap: 16,
               fontSize: 11,
               fontWeight: 700,
@@ -321,7 +343,7 @@ export default function ProductsPage() {
             }}
           >
             <span style={{ width: 10, flexShrink: 0 }} />
-            <span style={{ width: 46, flexShrink: 0 }} />
+            <span style={{ width: 50, flexShrink: 0 }} />
             <span style={{ width: 380, flexShrink: 0 }}>{t.products.colTitle}</span>
             <span style={{ width: 110, flexShrink: 0 }}>{t.products.colStatus}</span>
             <span style={{ width: 140, flexShrink: 0 }}>{t.products.colGuarantee}</span>
@@ -387,12 +409,20 @@ export default function ProductsPage() {
       <ProductFormModal
         product={productToEdit}
         orders={orders}
+        availableTypes={types}
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);
           dispatch(setProductToEdit(null));
         }}
         onSubmit={handleSaveProduct}
+      />
+
+      {/* Type Create Modal */}
+      <TypeCreateModal
+        isOpen={isTypeModalOpen}
+        onClose={() => setIsTypeModalOpen(false)}
+        onSubmit={handleCreateType}
       />
     </div>
   );

@@ -196,6 +196,18 @@ describe('Fullstack API Integration Tests (Controllers, Services & SQLite DB)', 
       expect(uahTotal).toBe(98400);
     });
 
+    it('should support dynamic product types addition and listing', async () => {
+      const initialTypes = await productsController.getTypes();
+      expect(Array.isArray(initialTypes)).toBe(true);
+
+      const updatedTypes = await productsController.createType('Keyboards');
+      expect(Array.isArray(updatedTypes)).toBe(true);
+      expect(updatedTypes).toContain('Keyboards');
+
+      const reFetchedTypes = await productsController.getTypes();
+      expect(reFetchedTypes).toContain('Keyboards');
+    });
+
     it('should support search and filtering on Products in SQLite', async () => {
       const allMonitors = await productsController.findAll({ type: 'Monitors' } as any);
       expect(allMonitors.some((p) => p.id === createdProductId1)).toBe(true);

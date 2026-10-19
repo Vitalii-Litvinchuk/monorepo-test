@@ -202,4 +202,21 @@ describe('Frontend Products Page Integration Tests (Table Grid, Custom Modals & 
       expect(screen.getByDisplayValue('Apple MacBook Pro 16 M3 Max')).toBeTruthy();
     });
   });
+
+  it('opens TypeCreateModal and allows creating a new type', async () => {
+    renderProductsWithStore();
+
+    const addTypeBtn = screen.getByText('+ Тип');
+    fireEvent.click(addTypeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Новий тип продукту')).toBeTruthy();
+      expect(screen.getByPlaceholderText(/Смартфони, Планшети/i)).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByText('ОТМЕНИТЬ'));
+    await waitFor(() => {
+      expect(screen.queryByText('Новий тип продукту')).toBeNull();
+    });
+  });
 });

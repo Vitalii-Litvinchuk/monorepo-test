@@ -32,6 +32,11 @@ export class ProductsController {
     return this.productsService.getTypes();
   }
 
+  @Post('types')
+  async createType(@Body('type') type: string): Promise<string[]> {
+    return this.productsService.addType(type || '');
+  }
+
   @Get('specifications')
   async getSpecifications(): Promise<string[]> {
     return this.productsService.getSpecifications();

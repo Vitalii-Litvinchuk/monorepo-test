@@ -13,13 +13,13 @@
   }
 }
 
-// 1. Optimized Grid View (fits into 1434px without scrollbar)
+// 1. Optimized Grid View (fits into 1434px without scrollbar, 8 strictly bounded columns)
 .optimizedGrid {
   width: 1434px;
   max-width: 100%;
   padding: 0 24px;
   display: grid;
-  grid-template-columns: 28px 46px minmax(220px, 2.2fr) 130px 140px 130px minmax(180px, 1.5fr) 76px;
+  grid-template-columns: 24px 50px minmax(280px, 2.4fr) 140px 150px 150px minmax(220px, 1.8fr) 76px;
   align-items: center;
   gap: 16px;
 }
@@ -49,17 +49,30 @@
   }
 }
 
-.photo {
-  width: 46px;
+.photoCol {
+  width: 50px;
   height: 38px;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  border-radius: 4px;
+  overflow: hidden;
   flex-shrink: 0;
+}
+
+.photo {
+  max-width: 46px;
+  max-height: 36px;
+  object-fit: contain;
+  display: block;
 }
 
 .titleBox {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
 
   &.classicWidth {
     width: 380px;
@@ -77,6 +90,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  display: block;
 
   &:hover {
     color: #1a252a;
@@ -87,6 +101,9 @@
   font-size: 11px;
   color: var(--color-text-muted);
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .statusCol {
@@ -280,4 +297,6 @@
   flex-direction: column;
   gap: 2px;
   font-size: 11px;
+  min-width: 0;
+  overflow: hidden;
 }

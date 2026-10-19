@@ -12,6 +12,7 @@ import {
 import { ProductTableViewMode } from '../../store/slices/ui-slice';
 import { getStaticUrl } from '../../utils/url';
 import { useTranslation } from '../../i18n';
+import { Tooltip } from '../tooltip';
 
 interface ProductRowProps {
   product: Product;
@@ -55,30 +56,47 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
   const usdPrice = product.prices?.find((p) => p.currencyCode === CurrencyCode.USD)?.value || 0;
   const uahPrice = product.prices?.find((p) => p.currencyCode === CurrencyCode.UAH)?.value || 0;
 
+  const fullTitleTooltip = (
+    <div>
+      <div style={{ fontWeight: 600 }}>{product.title}</div>
+      <div style={{ opacity: 0.85, fontSize: 11, marginTop: 2 }}>
+        SN-{product.serialNumber} • {product.type} • {product.specification}
+      </div>
+    </div>
+  );
+
+  const photoUrl = getStaticUrl(product.photo) || '/static/default-product.svg';
+
   if (viewMode === 'classic-scroll') {
-    // Exact 1-to-1 match to products-list.png layout (2542px width)
+    // Exact match to products-list.png layout (2542px width)
     return (
       <div className={`${styles.rowContainer} ${styles.classicScroll}`}>
-        <span className={`${styles.statusDot} ${statusClass}`} />
+        <Tooltip content={statusText}>
+          <span className={`${styles.statusDot} ${statusClass}`} />
+        </Tooltip>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={getStaticUrl(product.photo)}
-          alt={product.title}
-          className={styles.photo}
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
-          }}
-        />
-
-        <div className={`${styles.titleBox} ${styles.classicWidth}`}>
-          <span className={styles.productTitle} title={product.title}>
-            {product.title}
-          </span>
-          <span className={styles.serialNumber}>SN-{product.serialNumber}</span>
+        <div className={styles.photoCol}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photoUrl}
+            alt={product.title}
+            className={styles.photo}
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/static/default-product.svg';
+            }}
+          />
         </div>
+
+        <Tooltip content={fullTitleTooltip}>
+          <div className={`${styles.titleBox} ${styles.classicWidth}`}>
+            <span className={styles.productTitle} title={product.title}>
+              {product.title}
+            </span>
+            <span className={styles.serialNumber}>SN-{product.serialNumber}</span>
+          </div>
+        </Tooltip>
 
         <span className={`${styles.statusCol} ${statusClass} ${styles.classicWidth}`}>
           {statusText}
@@ -108,17 +126,23 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
           </span>
         </div>
 
-        <span className={`${styles.groupCol} ${styles.classicWidth}`} title={product.groupTitle || '—'}>
-          {product.groupTitle || '—'}
-        </span>
+        <Tooltip content={product.groupTitle || '—'}>
+          <span className={`${styles.groupCol} ${styles.classicWidth}`}>
+            {product.groupTitle || '—'}
+          </span>
+        </Tooltip>
 
-        <span className={`${styles.userCol} ${styles.classicWidth}`} title={product.assignedUserName || '—'}>
-          {product.assignedUserName || '—'}
-        </span>
+        <Tooltip content={product.assignedUserName || '—'}>
+          <span className={`${styles.userCol} ${styles.classicWidth}`}>
+            {product.assignedUserName || '—'}
+          </span>
+        </Tooltip>
 
-        <span className={`${styles.orderCol} ${styles.classicWidth}`} title={product.orderTitle || '—'}>
-          {product.orderTitle || '—'}
-        </span>
+        <Tooltip content={product.orderTitle || '—'}>
+          <span className={`${styles.orderCol} ${styles.classicWidth}`}>
+            {product.orderTitle || '—'}
+          </span>
+        </Tooltip>
 
         <div className={`${styles.dateCol} ${styles.classicWidth}`}>
           <span className={`${styles.shortDate} tabular-nums`}>
@@ -130,53 +154,67 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         </div>
 
         <div className={styles.actionsCol}>
-          <button
-            type="button"
-            className={styles.editBtn}
-            onClick={() => onEditClick && onEditClick(product)}
-            title={t.products.editProduct}
-          >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            className={styles.deleteBtn}
-            onClick={() => onDeleteClick && onDeleteClick(product)}
-            title={t.products.deleteProduct}
-          >
-            <Trash2 size={16} />
-          </button>
+          <Tooltip content={t.products.editProduct}>
+            <button
+              type="button"
+              className={styles.editBtn}
+              onClick={() => onEditClick && onEditClick(product)}
+              title={t.products.editProduct}
+            >
+              <Pencil size={15} />
+            </button>
+          </Tooltip>
+          <Tooltip content={t.products.deleteProduct}>
+            <button
+              type="button"
+              className={styles.deleteBtn}
+              onClick={() => onDeleteClick && onDeleteClick(product)}
+              title={t.products.deleteProduct}
+            >
+              <Trash2 size={16} />
+            </button>
+          </Tooltip>
         </div>
       </div>
     );
   }
 
-  // Optimized Grid View: fits perfectly within 1434px without horizontal scrolling
+  // Optimized Grid View: fits perfectly within 1434px with 8 locked grid cells
   return (
     <div className={`${styles.rowContainer} ${styles.optimizedGrid}`}>
-      <span className={`${styles.statusDot} ${statusClass}`} />
+      {/* 1. Status Dot */}
+      <Tooltip content={statusText}>
+        <span className={`${styles.statusDot} ${statusClass}`} />
+      </Tooltip>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={getStaticUrl(product.photo)}
-        alt={product.title}
-        className={styles.photo}
-        loading="lazy"
-        decoding="async"
-        onError={(e) => {
-          (e.target as HTMLElement).style.display = 'none';
-        }}
-      />
-
-      <div className={styles.titleBox}>
-        <span className={styles.productTitle} title={product.title}>
-          {product.title}
-        </span>
-        <span className={styles.serialNumber}>
-          SN-{product.serialNumber} • {product.type}
-        </span>
+      {/* 2. Photo Column (Always in Track 2, never collapses) */}
+      <div className={styles.photoCol}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          alt={product.title}
+          className={styles.photo}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/static/default-product.svg';
+          }}
+        />
       </div>
 
+      {/* 3. Title & Serial Column */}
+      <Tooltip content={fullTitleTooltip}>
+        <div className={styles.titleBox}>
+          <span className={styles.productTitle}>
+            {product.title}
+          </span>
+          <span className={styles.serialNumber}>
+            SN-{product.serialNumber} • {product.type}
+          </span>
+        </div>
+      </Tooltip>
+
+      {/* 4. Status & Condition Column */}
       <div className={styles.badgeGroup}>
         <span className={`${styles.statusCol} ${statusClass}`}>
           {statusText}
@@ -184,6 +222,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         <span className={styles.conditionCol}>{conditionText}</span>
       </div>
 
+      {/* 5. Guarantee Column */}
       <div className={styles.guaranteeCol}>
         <div className={styles.guaranteeRow}>
           <span>{t.products.guaranteeFrom}</span>
@@ -195,6 +234,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         </div>
       </div>
 
+      {/* 6. Price Column */}
       <div className={styles.priceCol}>
         <span className={`${styles.priceUsd} tabular-nums`}>
           {formatNumber(usdPrice)} $
@@ -204,38 +244,42 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         </span>
       </div>
 
+      {/* 7. Binding (Order & User) Column */}
       <div className={styles.badgeGroup}>
-        <span
-          className={styles.orderCol}
-          title={`${t.products.bindingOrder} ${product.orderTitle || '—'}`}
-        >
-          📦 {product.orderTitle || '—'}
-        </span>
-        <span
-          className={styles.userCol}
-          title={`${t.products.bindingUser} ${product.assignedUserName || t.products.notAssigned}`}
-        >
-          👤 {product.assignedUserName || t.products.notAssigned}
-        </span>
+        <Tooltip content={`${t.products.bindingOrder} ${product.orderTitle || '—'}`}>
+          <span className={styles.orderCol}>
+            📦 {product.orderTitle || '—'}
+          </span>
+        </Tooltip>
+        <Tooltip content={`${t.products.bindingUser} ${product.assignedUserName || t.products.notAssigned}`}>
+          <span className={styles.userCol}>
+            👤 {product.assignedUserName || t.products.notAssigned}
+          </span>
+        </Tooltip>
       </div>
 
+      {/* 8. Actions Column */}
       <div className={styles.actionsCol}>
-        <button
-          type="button"
-          className={styles.editBtn}
-          onClick={() => onEditClick && onEditClick(product)}
-          title={t.products.editProduct}
-        >
-          <Pencil size={15} />
-        </button>
-        <button
-          type="button"
-          className={styles.deleteBtn}
-          onClick={() => onDeleteClick && onDeleteClick(product)}
-          title={t.products.deleteProduct}
-        >
-          <Trash2 size={16} />
-        </button>
+        <Tooltip content={t.products.editProduct}>
+          <button
+            type="button"
+            className={styles.editBtn}
+            onClick={() => onEditClick && onEditClick(product)}
+            title={t.products.editProduct}
+          >
+            <Pencil size={15} />
+          </button>
+        </Tooltip>
+        <Tooltip content={t.products.deleteProduct}>
+          <button
+            type="button"
+            className={styles.deleteBtn}
+            onClick={() => onDeleteClick && onDeleteClick(product)}
+            title={t.products.deleteProduct}
+          >
+            <Trash2 size={16} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

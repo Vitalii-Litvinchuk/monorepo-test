@@ -26,6 +26,8 @@ import { useDebounce } from '../../utils/use-debounce';
 import { Order, Product, CreateProductDto } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
 
+import { Tooltip } from '../../components/tooltip';
+
 export default function OrdersPage() {
   const dispatch = useAppDispatch();
   const { items: orders, selectedOrderId, orderToDelete, orderToEdit, loading } = useAppSelector(
@@ -156,27 +158,29 @@ export default function OrdersPage() {
           marginBottom: '28px',
         }}
       >
-        <button
-          type="button"
-          onClick={handleOpenCreateOrder}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            backgroundColor: 'var(--color-brand-primary)',
-            boxShadow: '0 0 0 4px rgba(139, 195, 74, 0.35)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'transform 0.15s',
-          }}
-          title={t.orders.addOrder}
-        >
-          <Plus size={20} />
-        </button>
+        <Tooltip content={t.orders.addOrder}>
+          <button
+            type="button"
+            onClick={handleOpenCreateOrder}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              backgroundColor: 'var(--color-brand-primary)',
+              boxShadow: '0 0 0 4px rgba(139, 195, 74, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.15s',
+            }}
+            title={t.orders.addOrder}
+          >
+            <Plus size={20} />
+          </button>
+        </Tooltip>
 
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
           {t.orders.title} / {orders.length}
@@ -221,6 +225,7 @@ export default function OrdersPage() {
           display: 'flex',
           alignItems: 'flex-start',
           gap: isSplitView ? 16 : 0,
+          paddingTop: isSplitView ? 12 : 0,
           transition: 'all 0.3s ease',
         }}
       >

@@ -6,6 +6,7 @@ import styles from './order-detail-panel.module.scss';
 import { Order, Product, ProductOperationalStatus } from '@dzencode/contracts';
 import { getStaticUrl } from '../../utils/url';
 import { useTranslation } from '../../i18n';
+import { Tooltip } from '../tooltip';
 
 interface OrderDetailPanelProps {
   order: Order;
@@ -25,14 +26,16 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
 
   return (
     <div className={styles.panel}>
-      <button
-        type="button"
-        className={styles.closeButton}
-        onClick={onClose}
-        title={t.orders.closeDetail}
-      >
-        <X size={18} />
-      </button>
+      <Tooltip content={t.orders.closeDetail}>
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onClose}
+          title={t.orders.closeDetail}
+        >
+          <X size={18} />
+        </button>
+      </Tooltip>
 
       <div className={styles.panelHeader}>
         <h2 className={styles.orderTitle}>{order.title}</h2>
@@ -56,41 +59,49 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
 
           return (
             <div key={product.id} className={styles.productRow}>
-              <span className={`${styles.statusDot} ${statusClass}`} />
+              <Tooltip content={statusText}>
+                <span className={`${styles.statusDot} ${statusClass}`} />
+              </Tooltip>
 
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={getStaticUrl(product.photo)}
-                alt={product.title}
-                className={styles.productPhoto}
-                loading="lazy"
-                decoding="async"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
-              />
-
-              <div className={styles.titleAndSn}>
-                <span className={styles.productTitle} title={product.title}>
-                  {product.title}
-                </span>
-                <span className={styles.serialNumber}>
-                  SN-{product.serialNumber}
-                </span>
+              <div className={styles.photoContainer}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getStaticUrl(product.photo) || '/static/default-product.svg'}
+                  alt={product.title}
+                  className={styles.productPhoto}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/static/default-product.svg';
+                  }}
+                />
               </div>
+
+              <Tooltip content={`${product.title} (SN-${product.serialNumber})`}>
+                <div className={styles.titleAndSn}>
+                  <span className={styles.productTitle} title={product.title}>
+                    {product.title}
+                  </span>
+                  <span className={styles.serialNumber}>
+                    SN-{product.serialNumber}
+                  </span>
+                </div>
+              </Tooltip>
 
               <span className={`${styles.statusText} ${statusClass}`}>
                 {statusText}
               </span>
 
-              <button
-                type="button"
-                className={styles.deleteProductBtn}
-                onClick={() => onDeleteProduct && onDeleteProduct(product)}
-                title={t.products.deleteProduct}
-              >
-                <Trash2 size={15} />
-              </button>
+              <Tooltip content={t.products.deleteProduct}>
+                <button
+                  type="button"
+                  className={styles.deleteProductBtn}
+                  onClick={() => onDeleteProduct && onDeleteProduct(product)}
+                  title={t.products.deleteProduct}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </Tooltip>
             </div>
           );
         })}

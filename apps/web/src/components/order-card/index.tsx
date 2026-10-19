@@ -5,6 +5,7 @@ import { List, Pencil, Trash2, ChevronRight } from 'lucide-react';
 import styles from './order-card.module.scss';
 import { Order, CurrencyCode } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
+import { Tooltip } from '../tooltip';
 
 interface OrderCardProps {
   order: Order;
@@ -38,6 +39,18 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
     }
   };
 
+  const titleTooltip = (
+    <div>
+      <div style={{ fontWeight: 600 }}>{order.title}</div>
+      {order.description && (
+        <div style={{ opacity: 0.85, fontSize: 11, marginTop: 2 }}>{order.description}</div>
+      )}
+      {order.location && (
+        <div style={{ opacity: 0.8, fontSize: 10, marginTop: 1 }}>📍 {order.location}</div>
+      )}
+    </div>
+  );
+
   return (
     <div
       className={`${styles.card} ${isCompact ? styles.compactMode : styles.fullMode} ${
@@ -46,25 +59,29 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
       onClick={isCompact ? handleCardClick : undefined}
     >
       {/* 1. Expand / Details Button */}
-      <button
-        type="button"
-        className={styles.listIconBtn}
-        onClick={handleCardClick}
-        title={t.orders.viewProducts}
-      >
-        <List size={18} />
-      </button>
+      <Tooltip content={t.orders.viewProducts}>
+        <button
+          type="button"
+          className={styles.listIconBtn}
+          onClick={handleCardClick}
+          title={t.orders.viewProducts}
+        >
+          <List size={18} />
+        </button>
+      </Tooltip>
 
       {/* 2. Title Column (Full Mode only) */}
       {!isCompact && (
         <div className={styles.titleCol}>
-          <span
-            className={styles.orderTitle}
-            onClick={handleCardClick}
-            title={order.title}
-          >
-            {order.title}
-          </span>
+          <Tooltip content={titleTooltip}>
+            <span
+              className={styles.orderTitle}
+              onClick={handleCardClick}
+              title={order.title}
+            >
+              {order.title}
+            </span>
+          </Tooltip>
         </div>
       )}
 
@@ -95,28 +112,32 @@ export const OrderCard: React.FC<OrderCardProps> = React.memo(({
           </div>
 
           <div className={styles.actionsCol}>
-            <button
-              type="button"
-              className={styles.editBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onEditClick) onEditClick(order);
-              }}
-              title={t.orders.editOrder}
-            >
-              <Pencil size={15} />
-            </button>
-            <button
-              type="button"
-              className={styles.deleteBtn}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onDeleteClick) onDeleteClick(order);
-              }}
-              title={t.orders.deleteOrder}
-            >
-              <Trash2 size={16} />
-            </button>
+            <Tooltip content={t.orders.editOrder}>
+              <button
+                type="button"
+                className={styles.editBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onEditClick) onEditClick(order);
+                }}
+                title={t.orders.editOrder}
+              >
+                <Pencil size={15} />
+              </button>
+            </Tooltip>
+            <Tooltip content={t.orders.deleteOrder}>
+              <button
+                type="button"
+                className={styles.deleteBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onDeleteClick) onDeleteClick(order);
+                }}
+                title={t.orders.deleteOrder}
+              >
+                <Trash2 size={16} />
+              </button>
+            </Tooltip>
           </div>
         </>
       )}

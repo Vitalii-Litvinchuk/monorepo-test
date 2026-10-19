@@ -237,12 +237,22 @@ export class ProductsService {
     return { success: true, id };
   }
 
+  private registeredTypes: Set<string> = new Set(['Laptops', 'Monitors', 'Smartphones', 'Tablets']);
   private cachedTypes: string[] | null = null;
   private cachedSpecs: string[] | null = null;
 
   private invalidateMetadataCache() {
     this.cachedTypes = null;
     this.cachedSpecs = null;
+  }
+
+  async addType(type: string): Promise<string[]> {
+    const clean = type.trim();
+    if (clean) {
+      this.registeredTypes.add(clean);
+      this.invalidateMetadataCache();
+    }
+    return this.getTypes();
   }
 
   async getTypes(): Promise<string[]> {
@@ -253,7 +263,10 @@ export class ProductsService {
       .orderBy('product.type', 'ASC')
       .getRawMany();
 
-    this.cachedTypes = result.map((r) => r.type).filter(Boolean);
+    const dbTypes = result.map((r) => r.type).filter(Boolean);
+    const combined = Array.from(new Set([...dbTypes, ...Array.from(this.registeredTypes)]));
+    combined.sort((a, b) => a.localeCompare(b));
+    this.cachedTypes = combined;
     return this.cachedTypes;
   }
 

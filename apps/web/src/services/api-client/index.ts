@@ -131,6 +131,13 @@ class ApiClient {
     return this.request<string[]>('/api/products/types');
   }
 
+  async createProductType(type: string): Promise<string[]> {
+    return this.request<string[]>('/api/products/types', {
+      method: 'POST',
+      body: JSON.stringify({ type }),
+    });
+  }
+
   async getProductSpecifications(): Promise<string[]> {
     return this.request<string[]>('/api/products/specifications');
   }

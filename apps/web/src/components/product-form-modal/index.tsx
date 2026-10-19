@@ -18,15 +18,19 @@ import { useTranslation } from '../../i18n';
 interface ProductFormModalProps {
   product?: Product | null;
   orders: Order[];
+  availableTypes?: string[];
   defaultOrderId?: string | null;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (dto: CreateProductDto | UpdateProductDto) => Promise<void>;
 }
 
+const DEFAULT_TYPES = ['Monitors', 'Laptops', 'Smartphones', 'Tablets'];
+
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   product,
   orders,
+  availableTypes = DEFAULT_TYPES,
   defaultOrderId,
   isOpen,
   onClose,
@@ -36,7 +40,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const [title, setTitle] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
-  const [type, setType] = useState('Мониторы');
+  const [type, setType] = useState('Monitors');
   const [specification, setSpecification] = useState('Specification 1');
   const [condition, setCondition] = useState<ProductCondition>(ProductCondition.NEW);
   const [operationalStatus, setOperationalStatus] = useState<ProductOperationalStatus>(
@@ -54,10 +58,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const isEdit = Boolean(product);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (product) {
       setTitle(product.title || '');
       setSerialNumber(String(product.serialNumber || ''));
-      setType(product.type || 'Мониторы');
+      setType(product.type || availableTypes[0] || 'Monitors');
       setSpecification(product.specification || 'Specification 1');
       setCondition(product.condition || ProductCondition.NEW);
       setOperationalStatus(product.operationalStatus || ProductOperationalStatus.AVAILABLE);
@@ -85,7 +91,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     } else {
       setTitle('');
       setSerialNumber(String(Math.floor(10000000 + Math.random() * 90000000)));
-      setType('Мониторы');
+      setType(availableTypes[0] || 'Monitors');
       setSpecification('Specification 1');
       setCondition(ProductCondition.NEW);
       setOperationalStatus(ProductOperationalStatus.AVAILABLE);
@@ -101,7 +107,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setPriceUah('4100');
     }
     setError(null);
-  }, [product, defaultOrderId, orders, isOpen]);
+  }, [product, defaultOrderId, isOpen]);
 
   if (!isOpen) return null;
 
@@ -255,11 +261,17 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <label>{t.products.type}</label>
                 <input
                   type="text"
+                  list="product-form-types-list"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  placeholder="Мониторы / Ноутбуки / Сервери..."
+                  placeholder="Оберіть або введіть новий тип..."
                   required
                 />
+                <datalist id="product-form-types-list">
+                  {availableTypes.map((tVal) => (
+                    <option key={tVal} value={tVal} />
+                  ))}
+                </datalist>
               </div>
 
               <div className={styles.formGroup}>
