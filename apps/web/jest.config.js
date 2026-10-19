@@ -16,5 +16,6 @@ module.exports = {
     '^@dzencode/contracts/(.*)$': '<rootDir>/../../packages/contracts/src/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': '<rootDir>/test/style-mock.js',
+    '^lucide-react$': '<rootDir>/../../node_modules/lucide-react/dist/cjs/lucide-react.js',
   },
 };

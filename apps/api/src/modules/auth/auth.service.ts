@@ -88,16 +88,16 @@ export class AuthService {
     if (email) {
       user = await this.userRepo.findOne({ where: { email } });
     }
-    if (!user) {
-      user = await this.userRepo.findOne({ order: { createdAt: 'ASC' } });
+    if (!user && !email) {
+      user = await this.userRepo.findOne({ where: {}, order: { createdAt: 'ASC' } });
     }
     if (!user) {
       user = this.userRepo.create({
-        googleId: 'demo-google-user-1',
-        email: 'alex.khrystorozhdestvensky@gmail.com',
-        fullName: 'Христорождественский Александр',
+        googleId: email ? `demo-${email}` : 'demo-google-user-1',
+        email: email || 'alex.khrystorozhdestvensky@gmail.com',
+        fullName: email ? email.split('@')[0] : 'Христорождественский Александр',
         avatarUrl: '/static/7c9e6679-7425-40de-944b-e07fc1f90ae7.png',
-        role: UserRole.ADMIN,
+        role: UserRole.MANAGER,
       });
       user = await this.userRepo.save(user);
     }
