@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import '../../common/env';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
@@ -14,13 +15,29 @@ function getCallbackUrl(): string {
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+  private readonly logger = new Logger(GoogleStrategy.name);
+
   constructor(private readonly authService: AuthService) {
+    const clientID = process.env.GOOGLE_CLIENT_ID || 'mock-google-client-id';
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || 'mock-google-client-secret';
+    const callbackURL = getCallbackUrl();
+
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID || 'mock-google-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'mock-google-client-secret',
-      callbackURL: getCallbackUrl(),
+      clientID,
+      clientSecret,
+      callbackURL,
       scope: ['profile', 'email'],
     });
+
+    if (clientID.startsWith('mock-')) {
+      this.logger.warn(
+        `⚠️ GoogleStrategy initialized with MOCK credentials (clientID=${clientID}). Make sure .env is configured!`,
+      );
+    } else {
+      this.logger.log(
+        `✅ GoogleStrategy initialized with real credentials (clientID=${clientID.substring(0, 15)}..., callbackURL=${callbackURL})`,
+      );
+    }
   }
 
   async validate(_accessToken: string, _refreshToken: string, profile: Profile) {

@@ -1,20 +1,4 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
-
-// Load .env from root and/or local api directory before initializing Nest
-const envPaths = [
-  path.resolve(process.cwd(), '.env'),
-  path.resolve(process.cwd(), '.env.local'),
-  path.resolve(__dirname, '../../../../.env'),
-  path.resolve(__dirname, '../.env'),
-];
-for (const envPath of envPaths) {
-  if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
-  }
-}
-dotenv.config();
+import './common/env';
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
