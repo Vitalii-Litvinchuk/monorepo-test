@@ -3,10 +3,7 @@
 import React from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import styles from './order-detail-panel.module.scss';
-import { Order, ProductOperationalStatus } from '@dzencode/contracts';
-import { useAppDispatch } from '../../store';
-import { deleteProduct } from '../../store/slices/products-slice';
-import { fetchOrders } from '../../store/slices/orders-slice';
+import { Order, Product, ProductOperationalStatus } from '@dzencode/contracts';
 import { getStaticUrl } from '../../utils/url';
 import { useTranslation } from '../../i18n';
 
@@ -14,23 +11,17 @@ interface OrderDetailPanelProps {
   order: Order;
   onClose: () => void;
   onAddProduct?: () => void;
+  onDeleteProduct?: (product: Product) => void;
 }
 
 export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
   order,
   onClose,
   onAddProduct,
+  onDeleteProduct,
 }) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const products = order.products || [];
-
-  const handleDeleteProduct = async (productId: string) => {
-    if (confirm(t.orders.deleteProductFromOrder)) {
-      await dispatch(deleteProduct(productId));
-      dispatch(fetchOrders());
-    }
-  };
 
   return (
     <div className={styles.panel}>
@@ -60,7 +51,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
       <div className={styles.productsList}>
         {products.map((product) => {
           const isRepair = product.operationalStatus === ProductOperationalStatus.IN_REPAIR;
-          const statusText = isRepair ? t.products.statusInRepair : t.orders.available;
+          const statusText = isRepair ? t.products.statusInRepair : t.products.statusAvailable;
           const statusClass = isRepair ? styles.repair : styles.available;
 
           return (
@@ -95,7 +86,7 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
               <button
                 type="button"
                 className={styles.deleteProductBtn}
-                onClick={() => handleDeleteProduct(product.id)}
+                onClick={() => onDeleteProduct && onDeleteProduct(product)}
                 title={t.products.deleteProduct}
               >
                 <Trash2 size={15} />

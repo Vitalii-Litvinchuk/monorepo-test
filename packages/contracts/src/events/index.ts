@@ -1,8 +1,10 @@
 export const WS_EVENTS = {
   SESSIONS_COUNT_UPDATED: 'sessions:count-updated',
   ORDER_CREATED: 'order:created',
+  ORDER_UPDATED: 'order:updated',
   ORDER_DELETED: 'order:deleted',
   PRODUCT_CREATED: 'product:created',
+  PRODUCT_UPDATED: 'product:updated',
   PRODUCT_DELETED: 'product:deleted',
 } as const;
 

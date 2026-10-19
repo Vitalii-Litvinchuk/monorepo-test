@@ -5,8 +5,7 @@
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border-card);
   border-radius: 4px;
-  display: flex;
-  align-items: center;
+  position: relative;
   transition: box-shadow 0.15s;
 
   &:hover {
@@ -20,7 +19,7 @@
   max-width: 100%;
   padding: 0 24px;
   display: grid;
-  grid-template-columns: 28px 46px 2.2fr 1.2fr 1fr 1.2fr 1.5fr 36px;
+  grid-template-columns: 28px 46px minmax(220px, 2.2fr) 130px 140px 130px minmax(180px, 1.5fr) 76px;
   align-items: center;
   gap: 16px;
 }
@@ -64,6 +63,7 @@
 
   &.classicWidth {
     width: 380px;
+    flex-shrink: 0;
   }
 }
 
@@ -104,6 +104,7 @@
 
   &.classicWidth {
     width: 110px;
+    flex-shrink: 0;
   }
 }
 
@@ -116,6 +117,7 @@
 
   &.classicWidth {
     width: 140px;
+    flex-shrink: 0;
   }
 
   .guaranteeRow {
@@ -137,6 +139,7 @@
 
   &.classicWidth {
     width: 90px;
+    flex-shrink: 0;
   }
 }
 
@@ -147,6 +150,7 @@
 
   &.classicWidth {
     width: 150px;
+    flex-shrink: 0;
   }
 
   .priceUsd {
@@ -179,6 +183,7 @@
 
   &.classicWidth {
     width: 320px;
+    flex-shrink: 0;
   }
 }
 
@@ -194,6 +199,7 @@
 
   &.classicWidth {
     width: 240px;
+    flex-shrink: 0;
   }
 }
 
@@ -209,6 +215,7 @@
 
   &.classicWidth {
     width: 320px;
+    flex-shrink: 0;
   }
 }
 
@@ -220,6 +227,7 @@
 
   &.classicWidth {
     width: 130px;
+    flex-shrink: 0;
   }
 
   .shortDate {
@@ -233,21 +241,38 @@
   }
 }
 
+.actionsCol {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.editBtn,
 .deleteBtn {
   color: var(--color-text-muted);
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
   flex-shrink: 0;
+}
 
-  &:hover {
-    color: var(--color-danger);
-    background-color: rgba(229, 57, 53, 0.08);
-  }
+.editBtn:hover {
+  color: var(--color-brand-primary);
+  background-color: rgba(139, 195, 74, 0.12);
+}
+
+.deleteBtn:hover {
+  color: var(--color-danger);
+  background-color: rgba(229, 57, 53, 0.08);
 }
 
 .badgeGroup {

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Plus, Search } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   fetchProducts,
@@ -8,13 +9,20 @@ import {
   fetchProductSpecifications,
   setSelectedType,
   setSelectedSpecification,
+  setProductToEdit,
+  setProductToDelete,
+  createProduct,
+  updateProduct,
   deleteProduct,
 } from '../../store/slices/products-slice';
+import { fetchOrders } from '../../store/slices/orders-slice';
 import { ProductRow } from '../../components/product-row';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
+import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
+import { ProductFormModal } from '../../components/product-form-modal';
 import { ProductsSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
-import { Product } from '@dzencode/contracts';
+import { Product, CreateProductDto, UpdateProductDto } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
 
 export default function ProductsPage() {
@@ -25,14 +33,21 @@ export default function ProductsPage() {
     specifications,
     selectedType,
     selectedSpecification,
+    productToEdit,
+    productToDelete,
     loading,
   } = useAppSelector((state) => state.products);
+  const { items: orders } = useAppSelector((state) => state.orders);
   const viewMode = useAppSelector((state) => state.ui.productTableViewMode);
-  const globalSearch = useAppSelector((state) => state.ui.globalSearch);
-  const debouncedSearch = useDebounce(globalSearch, 280);
   const { t } = useTranslation();
 
-  // Fetch filter metadata only once if not loaded
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch filter metadata and orders if not loaded
   useEffect(() => {
     if (types.length === 0) {
       dispatch(fetchProductTypes());
@@ -40,7 +55,10 @@ export default function ProductsPage() {
     if (specifications.length === 0) {
       dispatch(fetchProductSpecifications());
     }
-  }, [dispatch, types.length, specifications.length]);
+    if (orders.length === 0) {
+      dispatch(fetchOrders());
+    }
+  }, [dispatch, types.length, specifications.length, orders.length]);
 
   // Fetch products with debounced search query to prevent server overload
   useEffect(() => {
@@ -53,30 +71,134 @@ export default function ProductsPage() {
     );
   }, [dispatch, selectedType, selectedSpecification, debouncedSearch]);
 
-  const handleDeleteProduct = useCallback(
-    async (product: Product) => {
-      if (confirm(`${t.products.deleteConfirm} "${product.title}"?`)) {
-        await dispatch(deleteProduct(product.id));
-      }
+  // Create & Edit Handlers
+  const handleOpenCreate = () => {
+    dispatch(setProductToEdit(null));
+    setIsFormOpen(true);
+  };
+
+  const handleOpenEdit = useCallback(
+    (product: Product) => {
+      dispatch(setProductToEdit(product));
+      setIsFormOpen(true);
     },
-    [dispatch, t.products.deleteConfirm],
+    [dispatch],
   );
+
+  const handleSaveProduct = async (dto: CreateProductDto | UpdateProductDto) => {
+    if (productToEdit) {
+      await dispatch(
+        updateProduct({ id: productToEdit.id, dto: dto as UpdateProductDto }),
+      ).unwrap();
+    } else {
+      await dispatch(createProduct(dto as CreateProductDto)).unwrap();
+    }
+    dispatch(
+      fetchProducts({
+        type: selectedType,
+        specification: selectedSpecification,
+        search: debouncedSearch,
+      }),
+    );
+  };
+
+  // Delete Handlers
+  const handleOpenDelete = useCallback(
+    (product: Product) => {
+      dispatch(setProductToDelete(product));
+    },
+    [dispatch],
+  );
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+    try {
+      await dispatch(deleteProduct(productToDelete.id)).unwrap();
+      dispatch(setProductToDelete(null));
+      dispatch(
+        fetchProducts({
+          type: selectedType,
+          specification: selectedSpecification,
+          search: debouncedSearch,
+        }),
+      );
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [dispatch, productToDelete, selectedType, selectedSpecification, debouncedSearch]);
 
   return (
     <div>
-      {/* Top filters bar matching products-list.png */}
+      {/* Top filters and actions bar */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 28,
-          marginBottom: 32,
+          gap: 20,
+          marginBottom: 28,
         }}
       >
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+        <button
+          type="button"
+          onClick={handleOpenCreate}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            backgroundColor: 'var(--color-brand-primary)',
+            boxShadow: '0 0 0 4px rgba(139, 195, 74, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'transform 0.15s',
+          }}
+          title={t.products.createProduct}
+        >
+          <Plus size={20} />
+        </button>
+
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
           {t.products.title} / {products.length}
         </h1>
+
+        {/* Contextual Search Input */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#ffffff',
+            border: '1px solid var(--color-border-card)',
+            borderRadius: 4,
+            padding: '0 12px',
+            height: 34,
+            width: 260,
+            maxWidth: '100%',
+            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          <Search size={15} style={{ color: '#90a4ae', marginRight: 8, flexShrink: 0 }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t.products.searchPlaceholder}
+            style={{
+              border: 'none',
+              outline: 'none',
+              width: '100%',
+              fontSize: 13,
+              color: 'var(--color-text-primary)',
+              background: 'transparent',
+            }}
+          />
+        </div>
 
         {/* Filter 1: Type */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -87,8 +209,8 @@ export default function ProductsPage() {
             value={selectedType}
             onChange={(e) => dispatch(setSelectedType(e.target.value))}
             style={{
-              width: 334,
-              height: 30,
+              width: 220,
+              height: 34,
               backgroundColor: '#ffffff',
               border: '1px solid var(--color-border-card)',
               borderRadius: 3,
@@ -117,8 +239,8 @@ export default function ProductsPage() {
             value={selectedSpecification}
             onChange={(e) => dispatch(setSelectedSpecification(e.target.value))}
             style={{
-              width: 334,
-              height: 30,
+              width: 220,
+              height: 34,
               backgroundColor: '#ffffff',
               border: '1px solid var(--color-border-card)',
               borderRadius: 3,
@@ -158,9 +280,10 @@ export default function ProductsPage() {
             style={{
               width: 1434,
               maxWidth: '100%',
-              padding: '0 24px 10px',
+              padding: '0 24px 8px',
               display: 'grid',
-              gridTemplateColumns: '28px 46px 2.2fr 1.2fr 1fr 1.2fr 1.5fr 36px',
+              gridTemplateColumns:
+                '28px 46px minmax(220px, 2.2fr) 130px 140px 130px minmax(180px, 1.5fr) 76px',
               gap: 16,
               fontSize: 11,
               fontWeight: 700,
@@ -176,7 +299,43 @@ export default function ProductsPage() {
             <span>{t.products.colGuarantee}</span>
             <span>{t.products.colPrice}</span>
             <span>{t.products.colBinding}</span>
-            <span />
+            <span style={{ textAlign: 'right' }}>{t.products.colActions}</span>
+          </div>
+        )}
+
+        {/* Table column headers for Classic Scroll View */}
+        {viewMode === 'classic-scroll' && (
+          <div
+            style={{
+              width: 2542,
+              padding: '0 28px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 32,
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#90a4ae',
+              textTransform: 'uppercase',
+              letterSpacing: '0.6px',
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ width: 10, flexShrink: 0 }} />
+            <span style={{ width: 46, flexShrink: 0 }} />
+            <span style={{ width: 380, flexShrink: 0 }}>{t.products.colTitle}</span>
+            <span style={{ width: 110, flexShrink: 0 }}>{t.products.colStatus}</span>
+            <span style={{ width: 140, flexShrink: 0 }}>{t.products.colGuarantee}</span>
+            <span style={{ width: 90, flexShrink: 0 }}>{t.products.condition}</span>
+            <span style={{ width: 150, flexShrink: 0 }}>{t.products.colPrice}</span>
+            <span style={{ width: 320, flexShrink: 0 }}>{t.groups.title}</span>
+            <span style={{ width: 240, flexShrink: 0 }}>{t.users.title}</span>
+            <span style={{ width: 320, flexShrink: 0 }}>{t.orders.title}</span>
+            <span style={{ width: 130, flexShrink: 0, textAlign: 'center' }}>
+              {t.orders.colDate}
+            </span>
+            <span style={{ width: 76, flexShrink: 0, textAlign: 'right' }}>
+              {t.products.colActions}
+            </span>
           </div>
         )}
 
@@ -190,7 +349,8 @@ export default function ProductsPage() {
                 key={product.id}
                 product={product}
                 viewMode={viewMode}
-                onDeleteClick={handleDeleteProduct}
+                onEditClick={handleOpenEdit}
+                onDeleteClick={handleOpenDelete}
               />
             ))
           )}
@@ -213,6 +373,27 @@ export default function ProductsPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal for Products */}
+      <DeleteConfirmModal
+        product={productToDelete}
+        isOpen={Boolean(productToDelete)}
+        onClose={() => dispatch(setProductToDelete(null))}
+        onConfirm={handleConfirmDelete}
+        loading={isDeleting}
+      />
+
+      {/* Product Form Modal (Create & Edit) */}
+      <ProductFormModal
+        product={productToEdit}
+        orders={orders}
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          dispatch(setProductToEdit(null));
+        }}
+        onSubmit={handleSaveProduct}
+      />
     </div>
   );
 }

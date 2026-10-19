@@ -146,6 +146,80 @@ export class ProductsService {
     return result;
   }
 
+  async update(id: string, dto: any): Promise<Product> {
+    const item = await this.productRepo.findOne({
+      where: { id },
+      relations: ['prices', 'order', 'group', 'assignedUser'],
+    });
+
+    if (!item) {
+      throw new NotFoundException(`Продукт з ID ${id} не знайдено`);
+    }
+
+    if (dto.title !== undefined) item.title = dto.title;
+    if (dto.serialNumber !== undefined) item.serialNumber = dto.serialNumber;
+    if (dto.condition !== undefined) item.condition = dto.condition;
+    if (dto.operationalStatus !== undefined) item.operationalStatus = dto.operationalStatus;
+    if (dto.photo !== undefined) item.photo = dto.photo;
+    if (dto.type !== undefined) item.type = dto.type;
+    if (dto.specification !== undefined) item.specification = dto.specification;
+    if (dto.guaranteeStart !== undefined) item.guaranteeStart = new Date(dto.guaranteeStart);
+    if (dto.guaranteeEnd !== undefined) item.guaranteeEnd = new Date(dto.guaranteeEnd);
+
+    if (dto.orderId && dto.orderId !== item.orderId) {
+      const order = await this.orderRepo.findOne({ where: { id: dto.orderId } });
+      if (order) {
+        item.order = order;
+        item.orderId = order.id;
+      }
+    }
+
+    if (dto.groupId !== undefined) {
+      if (dto.groupId) {
+        const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+        item.group = group;
+        item.groupId = group ? group.id : null;
+      } else {
+        item.group = null as any;
+        item.groupId = null;
+      }
+    }
+
+    if (dto.assignedUserId !== undefined) {
+      if (dto.assignedUserId) {
+        const user = await this.userRepo.findOne({ where: { id: dto.assignedUserId } });
+        item.assignedUser = user;
+        item.assignedUserId = user ? user.id : null;
+      } else {
+        item.assignedUser = null as any;
+        item.assignedUserId = null;
+      }
+    }
+
+    const saved = await this.productRepo.save(item);
+
+    if (dto.prices && dto.prices.length > 0) {
+      await this.priceRepo.delete({ productId: saved.id });
+      const prices = dto.prices.map((pr: any) =>
+        this.priceRepo.create({
+          product: saved,
+          productId: saved.id,
+          value: pr.value,
+          currencyCode: pr.currencyCode,
+          currencyRole: pr.currencyRole,
+        }),
+      );
+      saved.prices = await this.priceRepo.save(prices);
+    }
+
+    const result = this.mapEntityToDto(saved);
+    this.eventEmitter.emit(WS_EVENTS.PRODUCT_UPDATED, result);
+    this.sessionsGateway.broadcastEvent(WS_EVENTS.PRODUCT_UPDATED, result);
+
+    this.invalidateMetadataCache();
+    return result;
+  }
+
   async remove(id: string): Promise<{ success: boolean; id: string }> {
     const item = await this.productRepo.findOne({ where: { id } });
     if (!item) {

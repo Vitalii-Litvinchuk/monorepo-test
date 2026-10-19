@@ -1,33 +1,48 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   fetchOrders,
   selectOrder,
   setOrderToDelete,
+  setOrderToEdit,
   deleteOrder,
   createOrder,
+  updateOrder,
 } from '../../store/slices/orders-slice';
+import {
+  createProduct,
+  deleteProduct,
+} from '../../store/slices/products-slice';
 import { OrderCard } from '../../components/order-card';
 import { OrderDetailPanel } from '../../components/order-detail-panel';
 import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
+import { OrderFormModal } from '../../components/order-form-modal';
+import { ProductFormModal } from '../../components/product-form-modal';
 import { OrdersSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
-import { Order } from '@dzencode/contracts';
+import { Order, Product, CreateProductDto } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
 
 export default function OrdersPage() {
   const dispatch = useAppDispatch();
-  const { items: orders, selectedOrderId, orderToDelete, loading } = useAppSelector(
+  const { items: orders, selectedOrderId, orderToDelete, orderToEdit, loading } = useAppSelector(
     (state) => state.orders,
   );
-  const globalSearch = useAppSelector((state) => state.ui.globalSearch);
-  const debouncedSearch = useDebounce(globalSearch, 250);
   const { t } = useTranslation();
 
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 250);
+
+  const [isDeletingOrder, setIsDeletingOrder] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+
+  // Product operations inside OrderDetailPanel
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
 
   useEffect(() => {
     dispatch(fetchOrders());
@@ -39,7 +54,7 @@ export default function OrdersPage() {
   );
   const isSplitView = Boolean(selectedOrder);
 
-  // Filter by debounced global search input with useMemo for high performance
+  // Filter orders by debounced local search input
   const filteredOrders = useMemo(() => {
     if (!debouncedSearch.trim()) return orders;
     const term = debouncedSearch.toLowerCase().trim();
@@ -61,6 +76,7 @@ export default function OrdersPage() {
     dispatch(selectOrder(null));
   }, [dispatch]);
 
+  // Order Delete Handlers
   const handleOpenDelete = useCallback(
     (order: Order) => {
       dispatch(setOrderToDelete(order));
@@ -68,40 +84,81 @@ export default function OrdersPage() {
     [dispatch],
   );
 
-  const handleConfirmDelete = useCallback(async () => {
+  const handleConfirmDeleteOrder = useCallback(async () => {
     if (!orderToDelete) return;
-    setIsDeleting(true);
+    setIsDeletingOrder(true);
     try {
       await dispatch(deleteOrder(orderToDelete.id)).unwrap();
     } catch (err) {
       console.error('Failed to delete order:', err);
     } finally {
-      setIsDeleting(false);
+      setIsDeletingOrder(false);
     }
   }, [dispatch, orderToDelete]);
 
-  const handleAddOrder = useCallback(async () => {
-    const title = prompt(t.orders.addOrderPrompt);
-    if (title && title.trim()) {
-      await dispatch(createOrder({ title: title.trim() }));
-      dispatch(fetchOrders());
+  // Order Form (Create & Edit) Handlers
+  const handleOpenCreateOrder = () => {
+    dispatch(setOrderToEdit(null));
+    setIsCreatingOrder(true);
+  };
+
+  const handleOpenEditOrder = useCallback(
+    (order: Order) => {
+      dispatch(setOrderToEdit(order));
+      setIsCreatingOrder(true);
+    },
+    [dispatch],
+  );
+
+  const handleSaveOrder = async (data: {
+    title: string;
+    description?: string;
+    location?: string;
+  }) => {
+    if (orderToEdit) {
+      await dispatch(updateOrder({ id: orderToEdit.id, dto: data })).unwrap();
+    } else {
+      await dispatch(createOrder(data)).unwrap();
     }
-  }, [dispatch, t.orders.addOrderPrompt]);
+    dispatch(fetchOrders());
+  };
+
+  // Product Delete Handlers (inside Detail Panel)
+  const handleConfirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeletingProduct(true);
+    try {
+      await dispatch(deleteProduct(productToDelete.id)).unwrap();
+      dispatch(fetchOrders());
+      setProductToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete product from order:', err);
+    } finally {
+      setIsDeletingProduct(false);
+    }
+  };
+
+  // Product Add Handler (inside Detail Panel)
+  const handleSaveProduct = async (dto: any) => {
+    await dispatch(createProduct(dto as CreateProductDto)).unwrap();
+    dispatch(fetchOrders());
+  };
 
   return (
     <div>
-      {/* Header with green + button and title */}
+      {/* Top Toolbar: + button, Title, and Contextual Search */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
-          marginBottom: '36px',
+          flexWrap: 'wrap',
+          gap: '20px',
+          marginBottom: '28px',
         }}
       >
         <button
           type="button"
-          onClick={handleAddOrder}
+          onClick={handleOpenCreateOrder}
           style={{
             width: 36,
             height: 36,
@@ -112,6 +169,8 @@ export default function OrdersPage() {
             alignItems: 'center',
             justifyContent: 'center',
             color: '#ffffff',
+            border: 'none',
+            cursor: 'pointer',
             transition: 'transform 0.15s',
           }}
           title={t.orders.addOrder}
@@ -119,12 +178,44 @@ export default function OrdersPage() {
           <Plus size={20} />
         </button>
 
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
           {t.orders.title} / {orders.length}
         </h1>
+
+        {/* Contextual Orders Search Bar */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#ffffff',
+            border: '1px solid var(--color-border-card)',
+            borderRadius: 4,
+            padding: '0 12px',
+            height: 34,
+            width: 340,
+            maxWidth: '100%',
+            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          <Search size={15} style={{ color: '#90a4ae', marginRight: 8, flexShrink: 0 }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t.orders.searchPlaceholder}
+            style={{
+              border: 'none',
+              outline: 'none',
+              width: '100%',
+              fontSize: 13,
+              color: 'var(--color-text-primary)',
+              background: 'transparent',
+            }}
+          />
+        </div>
       </div>
 
-      {/* Main content: Either full-width list or Master-Detail Split View */}
+      {/* Main content: Full Table or Master-Detail Split View */}
       <div
         style={{
           display: 'flex',
@@ -145,6 +236,32 @@ export default function OrdersPage() {
             transition: 'width 0.3s ease',
           }}
         >
+          {/* Table Column Headers (Strict Grid alignment in Full Mode) */}
+          {!isSplitView && (
+            <div
+              style={{
+                width: 1434,
+                maxWidth: '100%',
+                padding: '0 28px 6px',
+                display: 'grid',
+                gridTemplateColumns: '44px minmax(260px, 1.8fr) 110px 160px 170px 84px',
+                gap: 16,
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#90a4ae',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+              }}
+            >
+              <span />
+              <span>{t.orders.colTitle}</span>
+              <span>{t.orders.colProducts}</span>
+              <span>{t.orders.colDate}</span>
+              <span>{t.orders.colTotal}</span>
+              <span style={{ textAlign: 'right' }}>{t.orders.colActions}</span>
+            </div>
+          )}
+
           {loading && orders.length === 0 && (
             <OrdersSkeletonList count={6} isCompact={isSplitView} />
           )}
@@ -156,6 +273,7 @@ export default function OrdersPage() {
               isCompact={isSplitView}
               isActive={selectedOrderId === order.id}
               onSelect={handleSelectOrder}
+              onEditClick={handleOpenEditOrder}
               onDeleteClick={handleOpenDelete}
             />
           ))}
@@ -181,21 +299,51 @@ export default function OrdersPage() {
           <OrderDetailPanel
             order={selectedOrder}
             onClose={handleCloseDetail}
-            onAddProduct={() => {
-              alert(t.orders.addProductPrompt);
-            }}
+            onAddProduct={() => setIsAddingProduct(true)}
+            onDeleteProduct={(prod) => setProductToDelete(prod)}
           />
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Universal Delete Confirmation Modal for Orders */}
       <DeleteConfirmModal
         order={orderToDelete}
         isOpen={Boolean(orderToDelete)}
         onClose={() => dispatch(setOrderToDelete(null))}
-        onConfirm={handleConfirmDelete}
-        loading={isDeleting}
+        onConfirm={handleConfirmDeleteOrder}
+        loading={isDeletingOrder}
       />
+
+      {/* Universal Delete Confirmation Modal for Products inside Order Detail */}
+      <DeleteConfirmModal
+        product={productToDelete}
+        isOpen={Boolean(productToDelete)}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={handleConfirmDeleteProduct}
+        loading={isDeletingProduct}
+      />
+
+      {/* Custom Order Form Modal (Create & Edit) */}
+      <OrderFormModal
+        order={orderToEdit}
+        isOpen={isCreatingOrder}
+        onClose={() => {
+          setIsCreatingOrder(false);
+          dispatch(setOrderToEdit(null));
+        }}
+        onSubmit={handleSaveOrder}
+      />
+
+      {/* Custom Product Form Modal for Order Detail panel */}
+      {selectedOrder && (
+        <ProductFormModal
+          orders={orders}
+          defaultOrderId={selectedOrder.id}
+          isOpen={isAddingProduct}
+          onClose={() => setIsAddingProduct(false)}
+          onSubmit={handleSaveProduct}
+        />
+      )}
     </div>
   );
 }

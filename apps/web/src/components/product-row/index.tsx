@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import styles from './product-row.module.scss';
 import {
   Product,
@@ -16,12 +16,14 @@ import { useTranslation } from '../../i18n';
 interface ProductRowProps {
   product: Product;
   viewMode?: ProductTableViewMode;
+  onEditClick?: (product: Product) => void;
   onDeleteClick?: (product: Product) => void;
 }
 
 export const ProductRow: React.FC<ProductRowProps> = React.memo(({
   product,
   viewMode = 'optimized-grid',
+  onEditClick,
   onDeleteClick,
 }) => {
   const {
@@ -127,14 +129,24 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
           </span>
         </div>
 
-        <button
-          type="button"
-          className={styles.deleteBtn}
-          onClick={() => onDeleteClick && onDeleteClick(product)}
-          title={t.products.deleteProduct}
-        >
-          <Trash2 size={16} />
-        </button>
+        <div className={styles.actionsCol}>
+          <button
+            type="button"
+            className={styles.editBtn}
+            onClick={() => onEditClick && onEditClick(product)}
+            title={t.products.editProduct}
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            type="button"
+            className={styles.deleteBtn}
+            onClick={() => onDeleteClick && onDeleteClick(product)}
+            title={t.products.deleteProduct}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
     );
   }
@@ -207,14 +219,24 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
         </span>
       </div>
 
-      <button
-        type="button"
-        className={styles.deleteBtn}
-        onClick={() => onDeleteClick && onDeleteClick(product)}
-        title={t.products.deleteProduct}
-      >
-        <Trash2 size={16} />
-      </button>
+      <div className={styles.actionsCol}>
+        <button
+          type="button"
+          className={styles.editBtn}
+          onClick={() => onEditClick && onEditClick(product)}
+          title={t.products.editProduct}
+        >
+          <Pencil size={15} />
+        </button>
+        <button
+          type="button"
+          className={styles.deleteBtn}
+          onClick={() => onDeleteClick && onDeleteClick(product)}
+          title={t.products.deleteProduct}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
     </div>
   );
 });

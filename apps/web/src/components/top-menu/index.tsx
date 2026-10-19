@@ -5,7 +5,6 @@ import { Clock, Shield } from 'lucide-react';
 import styles from './top-menu.module.scss';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { setActiveSessionsCount } from '../../store/slices/session-slice';
-import { setGlobalSearch } from '../../store/slices/ui-slice';
 import { demoLoginThunk, logout } from '../../store/slices/auth-slice';
 import { getSocketClient, WS_EVENTS } from '../../services/socket-client';
 import { getApiUrl } from '../../utils/url';
@@ -16,7 +15,6 @@ export const TopMenu: React.FC = () => {
   const activeSessionsCount = useAppSelector(
     (state) => state.session.activeSessionsCount,
   );
-  const globalSearch = useAppSelector((state) => state.ui.globalSearch);
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const {
     t,
@@ -68,19 +66,6 @@ export const TopMenu: React.FC = () => {
           </div>
           <span className={styles.logoText}>INVENTORY</span>
         </div>
-
-        <form
-          className={styles.searchForm}
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder={t.topMenu.searchPlaceholder}
-            value={globalSearch}
-            onChange={(e) => dispatch(setGlobalSearch(e.target.value))}
-          />
-        </form>
       </div>
 
       <div className={styles.rightSection}>

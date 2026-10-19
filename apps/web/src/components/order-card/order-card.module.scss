@@ -3,8 +3,6 @@
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border-card);
   border-radius: 4px;
-  display: flex;
-  align-items: center;
   position: relative;
   transition: box-shadow 0.2s, border-color 0.2s, width 0.3s ease;
   user-select: none;
@@ -23,12 +21,17 @@
   width: 1434px;
   max-width: 100%;
   padding: 0 28px;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 44px minmax(260px, 1.8fr) 110px 160px 170px 84px;
+  align-items: center;
+  gap: 16px;
 }
 
 .compactMode {
   width: 467px;
   padding: 0 0 0 20px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
 
   &.active {
@@ -37,9 +40,8 @@
 }
 
 .titleCol {
-  flex: 1;
   min-width: 0;
-  padding-right: 20px;
+  overflow: hidden;
 }
 
 .orderTitle {
@@ -71,7 +73,8 @@
   color: var(--color-text-secondary);
   background: transparent;
   flex-shrink: 0;
-  margin-right: 20px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
 
   &:hover {
     background-color: #f5f7f8;
@@ -82,8 +85,7 @@
 .productsCountCol {
   display: flex;
   flex-direction: column;
-  min-width: 90px;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .productsCountNumber {
@@ -101,10 +103,8 @@
 .dateCol {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  min-width: 120px;
-  flex-shrink: 0;
-  padding: 0 10px;
+  align-items: flex-start;
+  min-width: 0;
 }
 
 .dateShort {
@@ -121,9 +121,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 140px;
-  flex-shrink: 0;
-  padding: 0 14px;
+  min-width: 0;
 }
 
 .priceUsd {
@@ -144,21 +142,37 @@
   }
 }
 
+.actionsCol {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editBtn,
 .deleteBtn {
   color: var(--color-text-muted);
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
   transition: color 0.15s, background-color 0.15s;
   flex-shrink: 0;
+}
 
-  &:hover {
-    color: var(--color-danger);
-    background-color: rgba(229, 57, 53, 0.08);
-  }
+.editBtn:hover {
+  color: var(--color-brand-primary);
+  background-color: rgba(139, 195, 74, 0.12);
+}
+
+.deleteBtn:hover {
+  color: var(--color-danger);
+  background-color: rgba(229, 57, 53, 0.08);
 }
 
 .activeChevronBox {

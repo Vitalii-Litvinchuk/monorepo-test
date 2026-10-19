@@ -23,6 +23,7 @@ export interface Translations {
   orders: {
     title: string;
     addOrder: string;
+    editOrder: string;
     addOrderPrompt: string;
     empty: string;
     products: string;
@@ -40,6 +41,19 @@ export interface Translations {
     deleting: string;
     close: string;
     productsCountPrefix: string;
+    searchPlaceholder: string;
+    createOrderModalTitle: string;
+    editOrderModalTitle: string;
+    orderTitleLabel: string;
+    orderDescLabel: string;
+    orderLocationLabel: string;
+    save: string;
+    saving: string;
+    colTitle: string;
+    colProducts: string;
+    colDate: string;
+    colTotal: string;
+    colActions: string;
   };
   products: {
     title: string;
@@ -55,6 +69,7 @@ export interface Translations {
     colGuarantee: string;
     colPrice: string;
     colBinding: string;
+    colActions: string;
     guaranteeFrom: string;
     guaranteeTo: string;
     statusInRepair: string;
@@ -65,9 +80,25 @@ export interface Translations {
     deleteConfirm: string;
     empty: string;
     deleteProduct: string;
+    editProduct: string;
+    createProduct: string;
     bindingOrder: string;
     bindingUser: string;
     notAssigned: string;
+    searchPlaceholder: string;
+    createProductModalTitle: string;
+    editProductModalTitle: string;
+    serialNumber: string;
+    condition: string;
+    operationalStatus: string;
+    priceUsd: string;
+    priceUah: string;
+    guaranteeStart: string;
+    guaranteeEnd: string;
+    assignOrder: string;
+    assignUser: string;
+    assignGroup: string;
+    photo: string;
   };
   users: {
     title: string;

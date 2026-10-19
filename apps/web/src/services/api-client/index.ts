@@ -1,7 +1,9 @@
 import {
   AuthResponseDto,
   CreateOrderDto,
+  UpdateOrderDto,
   CreateProductDto,
+  UpdateProductDto,
   Group,
   Order,
   ProblemDetails,
@@ -103,6 +105,13 @@ class ApiClient {
     });
   }
 
+  async updateOrder(id: string, dto: UpdateOrderDto): Promise<Order> {
+    return this.request<Order>(`/api/orders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  }
+
   // Products
   async getProducts(filter?: ProductFilterQuery): Promise<Product[]> {
     const params = new URLSearchParams();
@@ -129,6 +138,13 @@ class ApiClient {
   async createProduct(dto: CreateProductDto): Promise<Product> {
     return this.request<Product>('/api/products', {
       method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateProduct(id: string, dto: UpdateProductDto): Promise<Product> {
+    return this.request<Product>(`/api/products/${id}`, {
+      method: 'PUT',
       body: JSON.stringify(dto),
     });
   }

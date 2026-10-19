@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Param,
   Body,
@@ -9,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDtoClass } from './dto/create-order.dto';
+import { UpdateOrderDtoClass } from './dto/update-order.dto';
 import { Order, UserRole } from '@dzencode/contracts';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -38,6 +40,16 @@ export class OrdersController {
     @CurrentUser() user?: UserEntity,
   ): Promise<Order> {
     return this.ordersService.create(dto, user);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateOrderDtoClass,
+  ): Promise<Order> {
+    return this.ordersService.update(id, dto);
   }
 
   @Delete(':id')

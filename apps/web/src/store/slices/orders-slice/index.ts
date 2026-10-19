@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Order, CreateOrderDto } from '@dzencode/contracts';
+import { Order, CreateOrderDto, UpdateOrderDto } from '@dzencode/contracts';
 import { apiClient } from '../../../services/api-client';
 
 export interface OrdersState {
   items: Order[];
   selectedOrderId: string | null;
   orderToDelete: Order | null;
+  orderToEdit: Order | null;
   loading: boolean;
   error: string | null;
 }
@@ -14,6 +15,7 @@ const initialState: OrdersState = {
   items: [],
   selectedOrderId: null,
   orderToDelete: null,
+  orderToEdit: null,
   loading: false,
   error: null,
 };
@@ -26,6 +28,13 @@ export const createOrder = createAsyncThunk(
   'orders/create',
   async (dto: CreateOrderDto) => {
     return await apiClient.createOrder(dto);
+  },
+);
+
+export const updateOrder = createAsyncThunk(
+  'orders/update',
+  async ({ id, dto }: { id: string; dto: UpdateOrderDto }) => {
+    return await apiClient.updateOrder(id, dto);
   },
 );
 
@@ -46,6 +55,9 @@ export const ordersSlice = createSlice({
     },
     setOrderToDelete: (state, action: PayloadAction<Order | null>) => {
       state.orderToDelete = action.payload;
+    },
+    setOrderToEdit: (state, action: PayloadAction<Order | null>) => {
+      state.orderToEdit = action.payload;
     },
     // WebSocket real-time event updates
     onOrderCreatedWs: (state, action: PayloadAction<Order>) => {
@@ -82,6 +94,13 @@ export const ordersSlice = createSlice({
           state.items.unshift(action.payload);
         }
       })
+      .addCase(updateOrder.fulfilled, (state, action) => {
+        const idx = state.items.findIndex((o) => o.id === action.payload.id);
+        if (idx !== -1) {
+          state.items[idx] = { ...state.items[idx], ...action.payload };
+        }
+        state.orderToEdit = null;
+      })
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.items = state.items.filter((o) => o.id !== action.payload);
         if (state.selectedOrderId === action.payload) {
@@ -95,6 +114,7 @@ export const ordersSlice = createSlice({
 export const {
   selectOrder,
   setOrderToDelete,
+  setOrderToEdit,
   onOrderCreatedWs,
   onOrderDeletedWs,
 } = ordersSlice.actions;

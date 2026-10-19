@@ -74,6 +74,36 @@ export class OrdersService {
     return result;
   }
 
+  async update(id: string, dto: { title?: string; description?: string; location?: string; latitude?: number; longitude?: number }): Promise<Order> {
+    const order = await this.orderRepo.findOne({
+      where: { id },
+      relations: [
+        'products',
+        'products.prices',
+        'products.group',
+        'products.assignedUser',
+      ],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Приход з ID ${id} не знайдено`);
+    }
+
+    if (dto.title !== undefined) order.title = dto.title;
+    if (dto.description !== undefined) order.description = dto.description;
+    if (dto.location !== undefined) order.location = dto.location;
+    if (dto.latitude !== undefined) order.latitude = dto.latitude;
+    if (dto.longitude !== undefined) order.longitude = dto.longitude;
+
+    const saved = await this.orderRepo.save(order);
+    const result = this.mapOrderEntityToDto(saved);
+
+    this.eventEmitter.emit(WS_EVENTS.ORDER_UPDATED, result);
+    this.sessionsGateway.broadcastEvent(WS_EVENTS.ORDER_UPDATED, result);
+
+    return result;
+  }
+
   async remove(id: string): Promise<{ success: boolean; id: string }> {
     const order = await this.orderRepo.findOne({ where: { id } });
     if (!order) {
