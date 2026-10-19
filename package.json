@@ -1,0 +1,28 @@
+{
+  "name": "dzencode-inventory-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fullstack Orders & Products Inventory Monorepo (Next.js + NestJS + SQLite + Google OAuth)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:e2e": "turbo run test:e2e",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "start": "turbo run start",
+    "seed": "npm run seed --workspace=@dzencode/api",
+    "db:migrate": "npm run db:migrate --workspace=@dzencode/api"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3",
+    "@types/node": "^22.13.1"
+  },
+  "packageManager": "npm@11.6.2"
+}
