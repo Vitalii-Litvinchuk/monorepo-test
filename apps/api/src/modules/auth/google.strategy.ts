@@ -3,13 +3,22 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
 
+function getCallbackUrl(): string {
+  if (process.env.GOOGLE_CALLBACK_URL) {
+    return process.env.GOOGLE_CALLBACK_URL;
+  }
+  const baseUrl = (process.env.API_URL || 'http://localhost:4000').replace(/\/+$/, '');
+  const prefix = process.env.BASE_PATH ? `/${process.env.BASE_PATH.replace(/^\/+|\/+$/g, '')}` : '';
+  return `${baseUrl}${prefix}/api/auth/google/callback`;
+}
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly authService: AuthService) {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID || 'mock-google-client-id',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'mock-google-client-secret',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:4000/api/auth/google/callback',
+      callbackURL: getCallbackUrl(),
       scope: ['profile', 'email'],
     });
   }
