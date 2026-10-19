@@ -1,0 +1,67 @@
+// Design Tokens extracted from reference screenshots (1920x672 / 1920x759 / 2930x672)
+:root {
+  --color-bg-canvas: #f0f3f5;
+  --color-bg-surface: #ffffff;
+  --color-brand-primary: #8bc34a;
+  --color-brand-modal-footer: #85bc47;
+  --color-status-available: #cddc39;
+  --color-status-repair: #263238;
+  --color-text-primary: #2c3c44;
+  --color-text-secondary: #546e7a;
+  --color-text-muted: #90a4ae;
+  --color-border-card: #cfd8dc;
+  --color-border-divider: #eaeff2;
+  --color-danger: #e53935;
+  --color-overlay-backdrop: rgba(84, 110, 122, 0.62);
+
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --header-height: 74px;
+  --sidebar-width: 197px;
+  --card-height: 72px;
+  --card-gap: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--color-bg-canvas);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #e4e7e9;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cfd8dc;
+  border-radius: 3px;
+}
