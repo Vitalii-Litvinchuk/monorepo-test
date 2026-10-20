@@ -27,7 +27,7 @@ export const TypeCreateModal: React.FC<TypeCreateModalProps> = ({
     e.preventDefault();
     const clean = typeName.trim();
     if (!clean) {
-      setError('Введіть назву типу');
+      setError(t.products.typeEmptyError);
       return;
     }
 
@@ -38,7 +38,7 @@ export const TypeCreateModal: React.FC<TypeCreateModalProps> = ({
       setTypeName('');
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Помилка при створенні типу');
+      setError(err?.message || t.products.typeCreateError);
     } finally {
       setSubmitting(false);
     }
@@ -61,7 +61,7 @@ export const TypeCreateModal: React.FC<TypeCreateModalProps> = ({
 
         <form onSubmit={handleSubmit}>
           <div className={styles.modalBody}>
-            <h3 className={styles.modalTitle}>Новий тип продукту</h3>
+            <h3 className={styles.modalTitle}>{t.products.createTypeModalTitle}</h3>
 
             {error && (
               <div
@@ -79,12 +79,12 @@ export const TypeCreateModal: React.FC<TypeCreateModalProps> = ({
             )}
 
             <div className={styles.formGroup}>
-              <label>Назва типу *</label>
+              <label>{t.products.typeNameLabel} *</label>
               <input
                 type="text"
                 value={typeName}
                 onChange={(e) => setTypeName(e.target.value)}
-                placeholder="Смартфони, Планшети, Принтери..."
+                placeholder={t.products.typeNamePlaceholder}
                 required
                 autoFocus
               />

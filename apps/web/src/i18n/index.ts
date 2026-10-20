@@ -19,6 +19,40 @@ export function getTranslations(lang: Language): Translations {
   return dictionaries[lang] || dictionaries.ru;
 }
 
+export function formatProductType(type: string | undefined, lang: Language = 'ua'): string {
+  if (!type) return '';
+  const trimmed = type.trim();
+  const lower = trimmed.toLowerCase();
+  const currentDict = dictionaries[lang] || dictionaries.ua;
+
+  // 1. Direct match with canonical key in current language
+  if (currentDict.products?.typesList?.[lower]) {
+    return currentDict.products.typesList[lower];
+  }
+
+  // 2. Direct match with translated value in current language
+  if (currentDict.products?.typesList) {
+    for (const [, val] of Object.entries(currentDict.products.typesList)) {
+      if (val.toLowerCase() === lower) {
+        return val;
+      }
+    }
+  }
+
+  // 3. Match across any other language dictionaries (e.g. input is 'Мониторы' or 'Monitors', current is 'ua')
+  for (const [, dict] of Object.entries(dictionaries)) {
+    if (dict.products?.typesList) {
+      for (const [canonicalKey, translatedVal] of Object.entries(dict.products.typesList)) {
+        if (translatedVal.toLowerCase() === lower || canonicalKey.toLowerCase() === lower) {
+          return currentDict.products.typesList[canonicalKey] || trimmed;
+        }
+      }
+    }
+  }
+
+  return trimmed;
+}
+
 export function useTranslation() {
   const dispatch = useAppDispatch();
   const currentLang = useAppSelector((state) => state.ui.language) || 'ru';
@@ -87,5 +121,6 @@ export function useTranslation() {
     formatDateFull,
     formatTime,
     formatDateGeneral,
+    formatProductType: (type: string | undefined) => formatProductType(type, currentLang),
   };
 }

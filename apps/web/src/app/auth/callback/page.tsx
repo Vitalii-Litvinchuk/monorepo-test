@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch } from '../../../store';
 import { setAuthToken } from '../../../store/slices/auth-slice';
 import { apiClient } from '../../../services/api-client';
+import { useTranslation } from '../../../i18n';
 
 function CallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -39,14 +41,15 @@ function CallbackInner() {
         fontSize: '16px',
       }}
     >
-      Авторизация через Google OAuth... Пожалуйста, подождите.
+      {t.auth.authenticating}
     </div>
   );
 }
 
 export default function AuthCallbackPage() {
+  const { t } = useTranslation();
   return (
-    <Suspense fallback={<div>Загрузка...</div>}>
+    <Suspense fallback={<div>{t.auth.loading}</div>}>
       <CallbackInner />
     </Suspense>
   );

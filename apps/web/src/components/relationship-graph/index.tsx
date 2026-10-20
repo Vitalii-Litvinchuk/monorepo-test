@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '../../store';
+import { useTranslation } from '../../i18n';
 
 interface Node {
   id: string;
@@ -20,6 +21,7 @@ interface Edge {
 }
 
 export const RelationshipGraph: React.FC = () => {
+  const { t, formatProductType } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const orders = useAppSelector((state) => state.orders.items);
   const products = useAppSelector((state) => state.products.items);
@@ -171,25 +173,25 @@ export const RelationshipGraph: React.FC = () => {
     >
       <div style={{ marginBottom: 16 }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2c3c44' }}>
-          Граф связей инвентаря (Orders ↔ Products ↔ Groups ↔ Users)
+          {t.analytics.graphTitle}
         </h3>
         <p style={{ fontSize: 13, color: '#546e7a', marginTop: 4 }}>
-          Интерактивная топология зависимостей складских приходов, продуктов и ответственных лиц
+          {t.analytics.graphDesc}
         </p>
       </div>
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 12 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#8bc34a' }} />
-          Приходы (Orders)
+          {t.analytics.graphOrders}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#03a9f4' }} />
-          Продукты (Products)
+          {t.analytics.graphProducts}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff9800' }} />
-          Пользователи (Users)
+          {t.analytics.graphUsers}
         </span>
       </div>
 
@@ -218,7 +220,7 @@ export const RelationshipGraph: React.FC = () => {
             color: '#2e7d32',
           }}
         >
-          Выбран узел: <strong>{selectedNode.label}</strong> (Тип: {selectedNode.type})
+          {t.analytics.graphSelectedNode} <strong>{selectedNode.label}</strong> ({t.products.type} {formatProductType(selectedNode.type)})
         </div>
       )}
     </div>

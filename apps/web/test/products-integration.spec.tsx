@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import ordersReducer from '../src/store/slices/orders-slice';
-import uiReducer from '../src/store/slices/ui-slice';
+import uiReducer, { setLanguage } from '../src/store/slices/ui-slice';
 import authReducer from '../src/store/slices/auth-slice';
 import sessionReducer from '../src/store/slices/session-slice';
 import productsReducer from '../src/store/slices/products-slice';
@@ -203,18 +203,29 @@ describe('Frontend Products Page Integration Tests (Table Grid, Custom Modals & 
     });
   });
 
-  it('opens TypeCreateModal and allows creating a new type', async () => {
-    renderProductsWithStore();
+  it('opens TypeCreateModal and allows creating a new type with full i18n support', async () => {
+    const { store } = renderProductsWithStore();
 
     const addTypeBtn = screen.getByText('+ Тип');
     fireEvent.click(addTypeBtn);
+
+    // Initial language is Russian
+    await waitFor(() => {
+      expect(screen.getByText('Новый тип продукта')).toBeTruthy();
+      expect(screen.getByPlaceholderText(/Смартфоны, Планшеты/i)).toBeTruthy();
+    });
+
+    // Switch language to Ukrainian dynamically
+    act(() => {
+      store.dispatch(setLanguage('ua'));
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Новий тип продукту')).toBeTruthy();
       expect(screen.getByPlaceholderText(/Смартфони, Планшети/i)).toBeTruthy();
     });
 
-    fireEvent.click(screen.getByText('ОТМЕНИТЬ'));
+    fireEvent.click(screen.getByText('СКАСУВАТИ'));
     await waitFor(() => {
       expect(screen.queryByText('Новий тип продукту')).toBeNull();
     });

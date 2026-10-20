@@ -33,7 +33,10 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
     formatDateShort,
     formatDateFull,
     formatNumber,
+    formatProductType,
   } = useTranslation();
+
+  const formattedType = formatProductType(product.type);
 
   const isRepair = product.operationalStatus === ProductOperationalStatus.IN_REPAIR;
   const statusText = isRepair ? t.products.statusInRepair : t.products.statusAvailable;
@@ -60,7 +63,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
     <div>
       <div style={{ fontWeight: 600 }}>{product.title}</div>
       <div style={{ opacity: 0.85, fontSize: 11, marginTop: 2 }}>
-        SN-{product.serialNumber} • {product.type} • {product.specification}
+        SN-{product.serialNumber} • {formattedType} • {product.specification}
       </div>
     </div>
   );
@@ -209,7 +212,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
             {product.title}
           </span>
           <span className={styles.serialNumber}>
-            SN-{product.serialNumber} • {product.type}
+            SN-{product.serialNumber} • {formattedType}
           </span>
         </div>
       </Tooltip>

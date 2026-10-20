@@ -54,6 +54,10 @@ export interface Translations {
     colDate: string;
     colTotal: string;
     colActions: string;
+    orderTitlePlaceholder: string;
+    orderDescPlaceholder: string;
+    orderLocationPlaceholder: string;
+    defaultLocation: string;
   };
   products: {
     title: string;
@@ -61,6 +65,16 @@ export interface Translations {
     allTypes: string;
     specification: string;
     allSpecifications: string;
+    createTypeAction: string;
+    createTypeBtn: string;
+    createTypeTooltip: string;
+    createTypeModalTitle: string;
+    typeNameLabel: string;
+    typeNamePlaceholder: string;
+    typeInputPlaceholder: string;
+    typeEmptyError: string;
+    typeCreateError: string;
+    typesList: Record<string, string>;
     viewMode: string;
     viewOptimized: string;
     viewClassic: string;
@@ -114,6 +128,25 @@ export interface Translations {
     title: string;
     workerAggregation: string;
     items: string;
+    orderSumsTitle: string;
+    sumUsd: string;
+    sumUah: string;
+    conditionDistributionTitle: string;
+    graphTitle: string;
+    graphDesc: string;
+    graphOrders: string;
+    graphProducts: string;
+    graphUsers: string;
+    graphSelectedNode: string;
+    mapTitle: string;
+    mapDesc: string;
+    mapLoading: string;
+    centralWarehouse: string;
+    productsCountSuffix: string;
+  };
+  auth: {
+    authenticating: string;
+    loading: string;
   };
   settings: {
     title: string;

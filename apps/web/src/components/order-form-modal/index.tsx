@@ -36,7 +36,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({
     } else {
       setTitle('');
       setDescription('');
-      setLocation('Центральний склад #1 (Київ)');
+      setLocation(t.orders.defaultLocation);
     }
     setError(null);
   }, [order, isOpen]);
@@ -110,7 +110,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Приход #1 Samsung & Apple"
+                placeholder={t.orders.orderTitlePlaceholder}
                 required
                 autoFocus
               />
@@ -121,7 +121,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Додаткові примітки або опис партії товарів..."
+                placeholder={t.orders.orderDescPlaceholder}
               />
             </div>
 
@@ -131,7 +131,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Центральний склад #1 (Київ)"
+                placeholder={t.orders.orderLocationPlaceholder}
               />
             </div>
           </div>

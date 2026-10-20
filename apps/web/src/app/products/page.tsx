@@ -43,7 +43,7 @@ export default function ProductsPage() {
   } = useAppSelector((state) => state.products);
   const { items: orders } = useAppSelector((state) => state.orders);
   const viewMode = useAppSelector((state) => state.ui.productTableViewMode);
-  const { t } = useTranslation();
+  const { t, formatProductType } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 250);
@@ -151,7 +151,7 @@ export default function ProductsPage() {
 
   const typeOptions = [
     { value: 'all', label: t.products.allTypes },
-    ...types.map((tVal) => ({ value: tVal, label: tVal })),
+    ...types.map((tVal) => ({ value: tVal, label: formatProductType(tVal) })),
   ];
 
   const specOptions = [
@@ -241,10 +241,10 @@ export default function ProductsPage() {
             value={selectedType}
             onChange={(val) => dispatch(setSelectedType(val))}
             onActionClick={() => setIsTypeModalOpen(true)}
-            actionLabel="+ Створити новий тип..."
+            actionLabel={t.products.createTypeAction}
             style={{ width: 200 }}
           />
-          <Tooltip content="Створити новий тип продукту">
+          <Tooltip content={t.products.createTypeTooltip}>
             <button
               type="button"
               onClick={() => setIsTypeModalOpen(true)}
@@ -264,7 +264,7 @@ export default function ProductsPage() {
               }}
             >
               <Tag size={13} />
-              <span>+ Тип</span>
+              <span>{t.products.createTypeBtn}</span>
             </button>
           </Tooltip>
         </div>

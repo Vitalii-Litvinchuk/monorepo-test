@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAppSelector } from '../../store';
+import { useTranslation } from '../../i18n';
 
 export const WarehouseMap: React.FC = () => {
+  const { t } = useTranslation();
   const orders = useAppSelector((state) => state.orders.items);
   const [isClient, setIsClient] = useState(false);
 
@@ -24,7 +26,7 @@ export const WarehouseMap: React.FC = () => {
           color: '#90a4ae',
         }}
       >
-        Загрузка интерактивной карты...
+        {t.analytics.mapLoading}
       </div>
     );
   }
@@ -42,10 +44,10 @@ export const WarehouseMap: React.FC = () => {
     >
       <div style={{ marginBottom: 16 }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2c3c44' }}>
-          Интерактивная карта складов и локаций приходов
+          {t.analytics.mapTitle}
         </h3>
         <p style={{ fontSize: 13, color: '#546e7a', marginTop: 4 }}>
-          Геолокации складов Киева, Львова, Одессы с привязкой активных партий инвентаря
+          {t.analytics.mapDesc}
         </p>
       </div>
 
@@ -79,10 +81,10 @@ export const WarehouseMap: React.FC = () => {
               fontSize: 12,
             }}
           >
-            <div style={{ fontWeight: 600, color: '#2c3c44' }}>{order.location || 'Центральный склад'}</div>
+            <div style={{ fontWeight: 600, color: '#2c3c44' }}>{order.location || t.analytics.centralWarehouse}</div>
             <div style={{ color: '#546e7a', marginTop: 2 }}>{order.title}</div>
             <div style={{ color: '#8bc34a', fontWeight: 600, marginTop: 4 }}>
-              {order.productsCount} продуктов • {order.latitude?.toFixed(4)}, {order.longitude?.toFixed(4)}
+              {order.productsCount} {t.analytics.productsCountSuffix} • {order.latitude?.toFixed(4)}, {order.longitude?.toFixed(4)}
             </div>
           </div>
         ))}

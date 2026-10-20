@@ -7,7 +7,7 @@ import authReducer from '../store/slices/auth-slice';
 import sessionReducer from '../store/slices/session-slice';
 import { NavigationMenu } from '../components/navigation-menu';
 import { TopMenu } from '../components/top-menu';
-import { getTranslations, dictionaries } from './index';
+import { getTranslations, dictionaries, formatProductType } from './index';
 
 describe('i18n System Tests', () => {
   it('has consistent and complete keys across ru, ua, and en dictionaries', () => {
@@ -107,5 +107,62 @@ describe('i18n System Tests', () => {
     fireEvent.click(enBtn);
 
     expect(store.getState().ui.language).toBe('en');
+  });
+
+  describe('Product Types i18n & formatProductType', () => {
+    it('translates canonical product types across UA, RU, and EN correctly', () => {
+      // English
+      expect(formatProductType('Monitors', 'en')).toBe('Monitors');
+      expect(formatProductType('Laptops', 'en')).toBe('Laptops');
+      expect(formatProductType('Smartphones', 'en')).toBe('Smartphones');
+      expect(formatProductType('Tablets', 'en')).toBe('Tablets');
+      expect(formatProductType('Keyboards', 'en')).toBe('Keyboards');
+
+      // Ukrainian
+      expect(formatProductType('Monitors', 'ua')).toBe('Монітори');
+      expect(formatProductType('Laptops', 'ua')).toBe('Ноутбуки');
+      expect(formatProductType('Smartphones', 'ua')).toBe('Смартфони');
+      expect(formatProductType('Tablets', 'ua')).toBe('Планшети');
+      expect(formatProductType('Keyboards', 'ua')).toBe('Клавіатури');
+
+      // Russian
+      expect(formatProductType('Monitors', 'ru')).toBe('Мониторы');
+      expect(formatProductType('Laptops', 'ru')).toBe('Ноутбуки');
+      expect(formatProductType('Smartphones', 'ru')).toBe('Смартфоны');
+      expect(formatProductType('Tablets', 'ru')).toBe('Планшеты');
+      expect(formatProductType('Keyboards', 'ru')).toBe('Клавиатуры');
+    });
+
+    it('cross-translates types when input is already localized in another language', () => {
+      // Input from RU 'Мониторы' -> target UA 'Монітори'
+      expect(formatProductType('Мониторы', 'ua')).toBe('Монітори');
+      // Input from UA 'Монітори' -> target EN 'Monitors'
+      expect(formatProductType('Монітори', 'en')).toBe('Monitors');
+      // Input from UA 'Смартфони' -> target RU 'Смартфоны'
+      expect(formatProductType('Смартфони', 'ru')).toBe('Смартфоны');
+    });
+
+    it('preserves custom user-created types gracefully without crashing', () => {
+      expect(formatProductType('VR Headsets', 'ua')).toBe('VR Headsets');
+      expect(formatProductType('VR Headsets', 'en')).toBe('VR Headsets');
+      expect(formatProductType('', 'ua')).toBe('');
+      expect(formatProductType(undefined, 'ua')).toBe('');
+    });
+
+    it('includes all type creation and modal strings in dictionaries', () => {
+      const langs = ['ru', 'ua', 'en'] as const;
+      for (const lang of langs) {
+        const p = dictionaries[lang].products;
+        expect(p.createTypeAction).toBeTruthy();
+        expect(p.createTypeBtn).toBeTruthy();
+        expect(p.createTypeTooltip).toBeTruthy();
+        expect(p.createTypeModalTitle).toBeTruthy();
+        expect(p.typeNameLabel).toBeTruthy();
+        expect(p.typeNamePlaceholder).toBeTruthy();
+        expect(p.typeInputPlaceholder).toBeTruthy();
+        expect(p.typeEmptyError).toBeTruthy();
+        expect(p.typeCreateError).toBeTruthy();
+      }
+    });
   });
 });

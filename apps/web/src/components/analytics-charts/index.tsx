@@ -15,10 +15,12 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store';
 import { CurrencyCode, ProductCondition } from '@dzencode/contracts';
+import { useTranslation } from '../../i18n';
 
 const COLORS = ['#8bc34a', '#546e7a', '#ff9800', '#03a9f4'];
 
 export const AnalyticsCharts: React.FC = () => {
+  const { t } = useTranslation();
   const orders = useAppSelector((state) => state.orders.items);
   const products = useAppSelector((state) => state.products.items);
 
@@ -47,9 +49,9 @@ export const AnalyticsCharts: React.FC = () => {
   });
 
   const conditionPieData = [
-    { name: 'Новый (NEW)', value: conditionCounts[ProductCondition.NEW] || 0 },
-    { name: 'Б / У (USED)', value: conditionCounts[ProductCondition.USED] || 0 },
-    { name: 'Восстановлен (REFURBISHED)', value: conditionCounts[ProductCondition.REFURBISHED] || 0 },
+    { name: `${t.products.conditionNew} (NEW)`, value: conditionCounts[ProductCondition.NEW] || 0 },
+    { name: `${t.products.conditionUsed} (USED)`, value: conditionCounts[ProductCondition.USED] || 0 },
+    { name: `${t.products.conditionRefurbished} (REFURBISHED)`, value: conditionCounts[ProductCondition.REFURBISHED] || 0 },
   ].filter((d) => d.value > 0);
 
   return (
@@ -64,7 +66,7 @@ export const AnalyticsCharts: React.FC = () => {
         }}
       >
         <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#2c3c44', marginBottom: '16px' }}>
-          Суммы приходов по валютам (USD / тыс. UAH)
+          {t.analytics.orderSumsTitle}
         </h3>
         <div style={{ width: '100%', height: 320 }}>
           <ResponsiveContainer>
@@ -73,8 +75,8 @@ export const AnalyticsCharts: React.FC = () => {
               <YAxis stroke="#90a4ae" fontSize={12} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="USD" fill="#8bc34a" name="Сумма (USD)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="UAH_Thousands" fill="#546e7a" name="Сумма (тыс. UAH)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="USD" fill="#8bc34a" name={t.analytics.sumUsd} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="UAH_Thousands" fill="#546e7a" name={t.analytics.sumUah} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -90,7 +92,7 @@ export const AnalyticsCharts: React.FC = () => {
         }}
       >
         <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#2c3c44', marginBottom: '16px' }}>
-          Распределение продуктов по состоянию (Condition: NEW / USED)
+          {t.analytics.conditionDistributionTitle}
         </h3>
         <div style={{ width: '100%', height: 260 }}>
           <ResponsiveContainer>

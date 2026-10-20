@@ -36,7 +36,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const { t } = useTranslation();
+  const { t, formatProductType } = useTranslation();
 
   const [title, setTitle] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
@@ -264,12 +264,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   list="product-form-types-list"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  placeholder="Оберіть або введіть новий тип..."
+                  placeholder={t.products.typeInputPlaceholder}
                   required
                 />
                 <datalist id="product-form-types-list">
                   {availableTypes.map((tVal) => (
-                    <option key={tVal} value={tVal} />
+                    <option key={tVal} value={tVal}>
+                      {formatProductType(tVal)}
+                    </option>
                   ))}
                 </datalist>
               </div>
