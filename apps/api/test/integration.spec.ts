@@ -8,6 +8,7 @@ import {
   GroupEntity,
   UserEntity,
 } from '../src/database/entities';
+import { GenericRepository } from '../src/database/repositories';
 import { OrdersController } from '../src/modules/orders/orders.controller';
 import { OrdersService } from '../src/modules/orders/orders.service';
 import { ProductsController } from '../src/modules/products/products.controller';
@@ -69,18 +70,16 @@ describe('Fullstack API Integration Tests (Controllers, Services & SQLite DB)', 
       signOptions: { expiresIn: '1h' },
     });
 
-    const orderRepo = dataSource.getRepository(OrderEntity);
-    const productRepo = dataSource.getRepository(ProductEntity);
-    const priceRepo = dataSource.getRepository(ProductPriceEntity);
-    const groupRepo = dataSource.getRepository(GroupEntity);
-    const userRepo = dataSource.getRepository(UserEntity);
+    const orderRepo = new GenericRepository(dataSource.getRepository(OrderEntity), dataSource);
+    const productRepo = new GenericRepository(dataSource.getRepository(ProductEntity), dataSource);
+    const groupRepo = new GenericRepository(dataSource.getRepository(GroupEntity), dataSource);
+    const userRepo = new GenericRepository(dataSource.getRepository(UserEntity), dataSource);
 
     ordersService = new OrdersService(orderRepo, eventEmitter, sessionsGateway);
     ordersController = new OrdersController(ordersService);
 
     productsService = new ProductsService(
       productRepo,
-      priceRepo,
       orderRepo,
       groupRepo,
       userRepo,
@@ -208,10 +207,29 @@ describe('Fullstack API Integration Tests (Controllers, Services & SQLite DB)', 
       expect(reFetchedTypes).toContain('Keyboards');
     });
 
-    it('should support search and filtering on Products in SQLite', async () => {
+    it('should support dynamic product specifications addition and listing', async () => {
+      const initialSpecs = await productsController.getSpecifications();
+      expect(Array.isArray(initialSpecs)).toBe(true);
+
+      const updatedSpecs = await productsController.createSpecification('UltraWide OLED 240Hz');
+      expect(Array.isArray(updatedSpecs)).toBe(true);
+      expect(updatedSpecs).toContain('UltraWide OLED 240Hz');
+
+      const reFetchedSpecs = await productsController.getSpecifications();
+      expect(reFetchedSpecs).toContain('UltraWide OLED 240Hz');
+    });
+
+    it('should support search and exact case-insensitive specification filtering on Products', async () => {
       const allMonitors = await productsController.findAll({ type: 'Monitors' } as any);
       expect(allMonitors.some((p) => p.id === createdProductId1)).toBe(true);
       expect(allMonitors.some((p) => p.id === createdProductId2)).toBe(false);
+
+      // Exact case-insensitive specification filter with whitespace trimming
+      const filteredBySpec = await productsController.findAll({
+        specification: '  16gb 512gb  ',
+      } as any);
+      expect(filteredBySpec.some((p) => p.id === createdProductId2)).toBe(true);
+      expect(filteredBySpec.some((p) => p.id === createdProductId1)).toBe(false);
 
       const searchMac = await productsController.findAll({ search: 'MacBook' } as any);
       expect(searchMac.some((p) => p.id === createdProductId2)).toBe(true);

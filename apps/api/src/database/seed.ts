@@ -65,6 +65,27 @@ export async function runSeed(dataSource?: DataSource) {
 
   const existingUsers = await userRepo.count();
   if (existingUsers > 0) {
+    // Normalization: Ensure existing SQLite database has varied specifications
+    const existingProducts = await productRepo.find();
+    if (existingProducts.length > 0) {
+      const distinctSpecs = new Set(existingProducts.map((p) => p.specification));
+      if (distinctSpecs.size <= 1) {
+        console.log('Normalizing homogeneous product specifications in existing database...');
+        const SPECS = [
+          'IPS 4K 144Hz DisplayPort 1.4',
+          'Apple M3 Max 16-Core 64GB Unified',
+          'Rev 2.0 6-Core DDR3 Triple Channel',
+          'AMOLED 120Hz 512GB HDR10+',
+          'Mechanical RGB Cherry MX Red',
+        ];
+        for (let idx = 0; idx < existingProducts.length; idx++) {
+          existingProducts[idx].specification = SPECS[idx % SPECS.length];
+        }
+        await productRepo.save(existingProducts);
+        console.log('Product specifications normalized successfully!');
+      }
+    }
+
     console.log('Database already seeded. Skipping.');
     if (createdLocal) await ds.destroy();
     return;
@@ -157,6 +178,14 @@ export async function runSeed(dataSource?: DataSource) {
     const assignedGrp = i % 3 === 0 ? group1 : i % 3 === 1 ? group2 : null;
     const assignedUsr = i % 4 === 0 ? alexUser : i % 4 === 1 ? demoUser : null;
 
+    const SPECS = [
+      'IPS 4K 144Hz DisplayPort 1.4',
+      'Apple M3 Max 16-Core 64GB Unified',
+      'Rev 2.0 6-Core DDR3 Triple Channel',
+      'AMOLED 120Hz 512GB HDR10+',
+      'Mechanical RGB Cherry MX Red',
+    ];
+
     const prod = productRepo.create({
       serialNumber: 123456789 + i,
       condition: isEven ? ProductCondition.USED : ProductCondition.NEW,
@@ -166,7 +195,7 @@ export async function runSeed(dataSource?: DataSource) {
       photo: photoUuid,
       title: 'Gigabyte Technology X58-USB3 (Socket 1366) 6 X58-USB3',
       type: i % 5 === 0 ? 'Laptops' : 'Monitors',
-      specification: 'Specification 1 (Rev 2.0 6-Core DDR3 Triple Channel)',
+      specification: SPECS[(i - 1) % SPECS.length],
       guaranteeStart: new Date('2017-04-06T12:09:33Z'),
       guaranteeEnd: new Date('2025-08-06T12:09:33Z'),
       order: assignedOrder,

@@ -98,8 +98,9 @@ export default function ProductsPage() {
     } else {
       await dispatch(createProduct(dto as CreateProductDto)).unwrap();
     }
-    // Refresh products and types
+    // Refresh products, types and specifications
     dispatch(fetchProductTypes());
+    dispatch(fetchProductSpecifications());
     dispatch(
       fetchProducts({
         type: selectedType,
@@ -135,6 +136,8 @@ export default function ProductsPage() {
     try {
       await dispatch(deleteProduct(productToDelete.id)).unwrap();
       dispatch(setProductToDelete(null));
+      dispatch(fetchProductTypes());
+      dispatch(fetchProductSpecifications());
       dispatch(
         fetchProducts({
           type: selectedType,

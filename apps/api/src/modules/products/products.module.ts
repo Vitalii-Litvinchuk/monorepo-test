@@ -1,25 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  ProductEntity,
-  ProductPriceEntity,
-  OrderEntity,
-  GroupEntity,
-  UserEntity,
-} from '../../database/entities';
+import { DatabaseModule } from '../../database/database.module';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      ProductEntity,
-      ProductPriceEntity,
-      OrderEntity,
-      GroupEntity,
-      UserEntity,
-    ]),
-  ],
+  imports: [DatabaseModule],
   controllers: [ProductsController],
   providers: [ProductsService],
   exports: [ProductsService],

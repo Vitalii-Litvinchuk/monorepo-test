@@ -42,6 +42,11 @@ export class ProductsController {
     return this.productsService.getSpecifications();
   }
 
+  @Post('specifications')
+  async createSpecification(@Body('specification') specification: string): Promise<string[]> {
+    return this.productsService.addSpecification(specification || '');
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Product> {
     return this.productsService.findOne(id);

@@ -142,6 +142,13 @@ class ApiClient {
     return this.request<string[]>('/api/products/specifications');
   }
 
+  async createProductSpecification(specification: string): Promise<string[]> {
+    return this.request<string[]>('/api/products/specifications', {
+      method: 'POST',
+      body: JSON.stringify({ specification }),
+    });
+  }
+
   async createProduct(dto: CreateProductDto): Promise<Product> {
     return this.request<Product>('/api/products', {
       method: 'POST',

@@ -63,6 +63,13 @@ export const fetchProductSpecifications = createAsyncThunk(
   },
 );
 
+export const createProductSpecification = createAsyncThunk(
+  'products/createSpecification',
+  async (specification: string) => {
+    return await apiClient.createProductSpecification(specification);
+  },
+);
+
 export const createProduct = createAsyncThunk(
   'products/create',
   async (dto: CreateProductDto) => {
@@ -142,6 +149,10 @@ export const productsSlice = createSlice({
       })
       .addCase(fetchProductSpecifications.fulfilled, (state, action) => {
         state.specifications = action.payload;
+      })
+      .addCase(createProductSpecification.fulfilled, (state, action) => {
+        state.specifications = action.payload;
+        state.selectedSpecification = action.meta.arg;
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         if (!state.items.find((p) => p.id === action.payload.id)) {

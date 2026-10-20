@@ -7,6 +7,7 @@ import {
   GroupEntity,
   UserEntity,
 } from '../src/database/entities';
+import { GenericRepository } from '../src/database/repositories';
 import { OrdersService } from '../src/modules/orders/orders.service';
 import { ProductsService } from '../src/modules/products/products.service';
 import {
@@ -53,17 +54,21 @@ describe('Performance & Load Tests (High Concurrency & Stress)', () => {
     const groupRepo = dataSource.getRepository(GroupEntity);
     const userRepo = dataSource.getRepository(UserEntity);
 
+    const genericOrderRepo = new GenericRepository(orderRepo, dataSource);
+    const genericProductRepo = new GenericRepository(productRepo, dataSource);
+    const genericGroupRepo = new GenericRepository(groupRepo, dataSource);
+    const genericUserRepo = new GenericRepository(userRepo, dataSource);
+
     ordersService = new OrdersService(
-      orderRepo,
+      genericOrderRepo,
       eventEmitter,
       mockSessionsGateway,
     );
     productsService = new ProductsService(
-      productRepo,
-      priceRepo,
-      orderRepo,
-      groupRepo,
-      userRepo,
+      genericProductRepo,
+      genericOrderRepo,
+      genericGroupRepo,
+      genericUserRepo,
       eventEmitter,
       mockSessionsGateway,
     );

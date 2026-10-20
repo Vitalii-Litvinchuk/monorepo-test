@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ProductEntity,
@@ -9,134 +7,127 @@ import {
   GroupEntity,
   UserEntity,
 } from '../../database/entities';
+import {
+  GenericRepository,
+  InjectGenericRepository,
+} from '../../database/repositories';
 import { CreateProductDtoClass } from './dto/create-product.dto';
+import { UpdateProductDtoClass } from './dto/update-product.dto';
 import { ProductFilterDtoClass } from './dto/product-filter.dto';
 import { Product, WS_EVENTS } from '@dzencode/contracts';
 import { SessionsGateway } from '../sessions/sessions.gateway';
+import { ProductMapper } from '../../common/mappers';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(ProductEntity)
-    private readonly productRepo: Repository<ProductEntity>,
-    @InjectRepository(ProductPriceEntity)
-    private readonly priceRepo: Repository<ProductPriceEntity>,
-    @InjectRepository(OrderEntity)
-    private readonly orderRepo: Repository<OrderEntity>,
-    @InjectRepository(GroupEntity)
-    private readonly groupRepo: Repository<GroupEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
+    @InjectGenericRepository(ProductEntity)
+    private readonly productRepo: GenericRepository<ProductEntity>,
+    @InjectGenericRepository(OrderEntity)
+    private readonly orderRepo: GenericRepository<OrderEntity>,
+    @InjectGenericRepository(GroupEntity)
+    private readonly groupRepo: GenericRepository<GroupEntity>,
+    @InjectGenericRepository(UserEntity)
+    private readonly userRepo: GenericRepository<UserEntity>,
     private readonly eventEmitter: EventEmitter2,
     private readonly sessionsGateway: SessionsGateway,
   ) {}
 
+  private readonly defaultRelations = ['prices', 'order', 'group', 'assignedUser'];
+
+  // CQRS Query: Find All Products with declarative criteria
   async findAll(filter?: ProductFilterDtoClass): Promise<Product[]> {
-    const qb = this.productRepo
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.prices', 'prices')
-      .leftJoinAndSelect('product.order', 'order')
-      .leftJoinAndSelect('product.group', 'group')
-      .leftJoinAndSelect('product.assignedUser', 'assignedUser')
-      .orderBy('product.createdAt', 'DESC');
-
-    if (filter?.type && filter.type !== 'all' && filter.type !== '') {
-      qb.andWhere('LOWER(product.type) = LOWER(:type)', { type: filter.type });
-    }
-
-    if (filter?.specification && filter.specification !== 'all' && filter.specification !== '') {
-      qb.andWhere('LOWER(product.specification) LIKE LOWER(:spec)', {
-        spec: `%${filter.specification}%`,
-      });
-    }
-
-    if (filter?.condition) {
-      qb.andWhere('product.condition = :condition', { condition: filter.condition });
-    }
-
-    if (filter?.operationalStatus) {
-      qb.andWhere('product.operationalStatus = :status', { status: filter.operationalStatus });
-    }
-
-    if (filter?.orderId) {
-      qb.andWhere('product.orderId = :orderId', { orderId: filter.orderId });
-    }
-
-    if (filter?.search && filter.search.trim() !== '') {
-      const term = `%${filter.search.trim().toLowerCase()}%`;
-      qb.andWhere(
-        '(LOWER(product.title) LIKE :term OR CAST(product.serialNumber AS TEXT) LIKE :term OR LOWER(product.specification) LIKE :term)',
-        { term },
-      );
-    }
-
-    const items = await qb.getMany();
-    return items.map((item) => this.mapEntityToDto(item));
-  }
-
-  async findOne(id: string): Promise<Product> {
-    const item = await this.productRepo.findOne({
-      where: { id },
-      relations: ['prices', 'order', 'group', 'assignedUser'],
+    const products = await this.productRepo.findAll({
+      where: {
+        type: filter?.type,
+        specification: filter?.specification,
+        condition: filter?.condition,
+        operationalStatus: filter?.operationalStatus,
+        orderId: filter?.orderId,
+      },
+      search: filter?.search
+        ? {
+            term: filter.search,
+            fields: ['title', 'serialNumber', 'specification'],
+          }
+        : undefined,
+      relations: this.defaultRelations,
+      orderBy: { createdAt: 'DESC' },
     });
 
+    return products.map(ProductMapper.toDto);
+  }
+
+  // CQRS Query: Find One Product
+  async findOne(id: string): Promise<Product> {
+    const item = await this.productRepo.findOneById(id, this.defaultRelations);
     if (!item) {
       throw new NotFoundException(`Продукт з ID ${id} не знайдено`);
     }
 
-    return this.mapEntityToDto(item);
+    return ProductMapper.toDto(item);
   }
 
+  // CQRS Command: Create Product in ACID transaction
   async create(dto: CreateProductDtoClass): Promise<Product> {
-    const order = await this.orderRepo.findOne({ where: { id: dto.orderId } });
+    const order = await this.orderRepo.findOneById(dto.orderId);
     if (!order) {
       throw new NotFoundException(`Приход з ID ${dto.orderId} не знайдено`);
     }
 
     let group: GroupEntity | null = null;
     if (dto.groupId) {
-      group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
+      group = await this.groupRepo.findOneById(dto.groupId);
     }
 
     let user: UserEntity | null = null;
     if (dto.assignedUserId) {
-      user = await this.userRepo.findOne({ where: { id: dto.assignedUserId } });
+      user = await this.userRepo.findOneById(dto.assignedUserId);
     }
 
-    const product = this.productRepo.create({
-      serialNumber: dto.serialNumber,
-      condition: dto.condition,
-      operationalStatus: dto.operationalStatus,
-      photo: dto.photo || '550e8400-e29b-41d4-a716-446655440000.png',
-      title: dto.title,
-      type: dto.type,
-      specification: dto.specification,
-      guaranteeStart: new Date(dto.guaranteeStart),
-      guaranteeEnd: new Date(dto.guaranteeEnd),
-      order,
-      orderId: order.id,
-      group,
-      groupId: group ? group.id : null,
-      assignedUser: user,
-      assignedUserId: user ? user.id : null,
+    const savedProduct = await this.productRepo.executeInTransaction(async (manager) => {
+      const prodRepo = manager.getRepository(ProductEntity);
+      const prRepo = manager.getRepository(ProductPriceEntity);
+
+      const product = prodRepo.create({
+        serialNumber: dto.serialNumber,
+        condition: dto.condition,
+        operationalStatus: dto.operationalStatus,
+        photo: dto.photo || '550e8400-e29b-41d4-a716-446655440000.png',
+        title: dto.title,
+        type: dto.type,
+        specification: dto.specification,
+        guaranteeStart: new Date(dto.guaranteeStart),
+        guaranteeEnd: new Date(dto.guaranteeEnd),
+        order,
+        orderId: order.id,
+        group,
+        groupId: group ? group.id : null,
+        assignedUser: user,
+        assignedUserId: user ? user.id : null,
+      });
+
+      const saved = await prodRepo.save(product);
+
+      if (dto.prices && dto.prices.length > 0) {
+        const prices = dto.prices.map((pr) =>
+          prRepo.create({
+            product: saved,
+            productId: saved.id,
+            value: pr.value,
+            currencyCode: pr.currencyCode,
+            currencyRole: pr.currencyRole,
+          }),
+        );
+        saved.prices = await prRepo.save(prices);
+      } else {
+        saved.prices = [];
+      }
+
+      return saved;
     });
 
-    const savedProduct = await this.productRepo.save(product);
-
-    if (dto.prices && dto.prices.length > 0) {
-      const prices = dto.prices.map((pr) =>
-        this.priceRepo.create({
-          product: savedProduct,
-          productId: savedProduct.id,
-          value: pr.value,
-          currencyCode: pr.currencyCode,
-          currencyRole: pr.currencyRole,
-        }),
-      );
-      savedProduct.prices = await this.priceRepo.save(prices);
-    }
-
-    const result = this.mapEntityToDto(savedProduct);
+    const result = ProductMapper.toDto(savedProduct);
 
     // EDA event & WS broadcast
     this.eventEmitter.emit(WS_EVENTS.PRODUCT_CREATED, result);
@@ -146,73 +137,83 @@ export class ProductsService {
     return result;
   }
 
-  async update(id: string, dto: any): Promise<Product> {
-    const item = await this.productRepo.findOne({
-      where: { id },
-      relations: ['prices', 'order', 'group', 'assignedUser'],
-    });
-
-    if (!item) {
+  // CQRS Command: Update Product in ACID transaction
+  async update(id: string, dto: UpdateProductDtoClass | any): Promise<Product> {
+    const existing = await this.productRepo.findOneById(id, this.defaultRelations);
+    if (!existing) {
       throw new NotFoundException(`Продукт з ID ${id} не знайдено`);
     }
 
-    if (dto.title !== undefined) item.title = dto.title;
-    if (dto.serialNumber !== undefined) item.serialNumber = dto.serialNumber;
-    if (dto.condition !== undefined) item.condition = dto.condition;
-    if (dto.operationalStatus !== undefined) item.operationalStatus = dto.operationalStatus;
-    if (dto.photo !== undefined) item.photo = dto.photo;
-    if (dto.type !== undefined) item.type = dto.type;
-    if (dto.specification !== undefined) item.specification = dto.specification;
-    if (dto.guaranteeStart !== undefined) item.guaranteeStart = new Date(dto.guaranteeStart);
-    if (dto.guaranteeEnd !== undefined) item.guaranteeEnd = new Date(dto.guaranteeEnd);
-
-    if (dto.orderId && dto.orderId !== item.orderId) {
-      const order = await this.orderRepo.findOne({ where: { id: dto.orderId } });
-      if (order) {
-        item.order = order;
-        item.orderId = order.id;
+    let order = existing.order;
+    if (dto.orderId && dto.orderId !== existing.orderId) {
+      const newOrder = await this.orderRepo.findOneById(dto.orderId);
+      if (newOrder) {
+        order = newOrder;
+        existing.orderId = newOrder.id;
       }
     }
 
+    let group = existing.group;
     if (dto.groupId !== undefined) {
       if (dto.groupId) {
-        const group = await this.groupRepo.findOne({ where: { id: dto.groupId } });
-        item.group = group;
-        item.groupId = group ? group.id : null;
+        const newGroup = await this.groupRepo.findOneById(dto.groupId);
+        group = newGroup;
+        existing.groupId = newGroup ? newGroup.id : null;
       } else {
-        item.group = null as any;
-        item.groupId = null;
+        group = null;
+        existing.groupId = null;
       }
     }
 
+    let user = existing.assignedUser;
     if (dto.assignedUserId !== undefined) {
       if (dto.assignedUserId) {
-        const user = await this.userRepo.findOne({ where: { id: dto.assignedUserId } });
-        item.assignedUser = user;
-        item.assignedUserId = user ? user.id : null;
+        const newUser = await this.userRepo.findOneById(dto.assignedUserId);
+        user = newUser;
+        existing.assignedUserId = newUser ? newUser.id : null;
       } else {
-        item.assignedUser = null as any;
-        item.assignedUserId = null;
+        user = null;
+        existing.assignedUserId = null;
       }
     }
 
-    const saved = await this.productRepo.save(item);
+    const updatedProduct = await this.productRepo.executeInTransaction(async (manager) => {
+      const prodRepo = manager.getRepository(ProductEntity);
+      const prRepo = manager.getRepository(ProductPriceEntity);
 
-    if (dto.prices && dto.prices.length > 0) {
-      await this.priceRepo.delete({ productId: saved.id });
-      const prices = dto.prices.map((pr: any) =>
-        this.priceRepo.create({
-          product: saved,
-          productId: saved.id,
-          value: pr.value,
-          currencyCode: pr.currencyCode,
-          currencyRole: pr.currencyRole,
-        }),
-      );
-      saved.prices = await this.priceRepo.save(prices);
-    }
+      if (dto.title !== undefined) existing.title = dto.title;
+      if (dto.serialNumber !== undefined) existing.serialNumber = dto.serialNumber;
+      if (dto.condition !== undefined) existing.condition = dto.condition;
+      if (dto.operationalStatus !== undefined) existing.operationalStatus = dto.operationalStatus;
+      if (dto.photo !== undefined) existing.photo = dto.photo;
+      if (dto.type !== undefined) existing.type = dto.type;
+      if (dto.specification !== undefined) existing.specification = dto.specification;
+      if (dto.guaranteeStart !== undefined) existing.guaranteeStart = new Date(dto.guaranteeStart);
+      if (dto.guaranteeEnd !== undefined) existing.guaranteeEnd = new Date(dto.guaranteeEnd);
+      existing.order = order;
+      existing.group = group;
+      existing.assignedUser = user;
 
-    const result = this.mapEntityToDto(saved);
+      const saved = await prodRepo.save(existing);
+
+      if (dto.prices && dto.prices.length > 0) {
+        await prRepo.delete({ productId: saved.id });
+        const prices = dto.prices.map((pr: any) =>
+          prRepo.create({
+            product: saved,
+            productId: saved.id,
+            value: pr.value,
+            currencyCode: pr.currencyCode,
+            currencyRole: pr.currencyRole,
+          }),
+        );
+        saved.prices = await prRepo.save(prices);
+      }
+
+      return saved;
+    });
+
+    const result = ProductMapper.toDto(updatedProduct);
     this.eventEmitter.emit(WS_EVENTS.PRODUCT_UPDATED, result);
     this.sessionsGateway.broadcastEvent(WS_EVENTS.PRODUCT_UPDATED, result);
 
@@ -220,14 +221,15 @@ export class ProductsService {
     return result;
   }
 
+  // CQRS Command: Remove Product
   async remove(id: string): Promise<{ success: boolean; id: string }> {
-    const item = await this.productRepo.findOne({ where: { id } });
+    const item = await this.productRepo.findOneById(id);
     if (!item) {
       throw new NotFoundException(`Продукт з ID ${id} не знайдено`);
     }
 
     const orderId = item.orderId;
-    await this.productRepo.remove(item);
+    await this.productRepo.delete(id);
 
     const payload = { productId: id, orderId, timestamp: new Date().toISOString() };
     this.eventEmitter.emit(WS_EVENTS.PRODUCT_DELETED, payload);
@@ -237,7 +239,17 @@ export class ProductsService {
     return { success: true, id };
   }
 
+  // Metadata Cache & Registries
   private registeredTypes: Set<string> = new Set(['Laptops', 'Monitors', 'Smartphones', 'Tablets']);
+  private registeredSpecs: Set<string> = new Set([
+    'Specification 1',
+    'IPS 4K 144Hz DisplayPort',
+    'Apple M3 Max 16-Core 64GB',
+    'Rev 2.0 6-Core DDR3 Triple Channel',
+    'AMOLED 120Hz 512GB',
+    'Mechanical RGB Cherry MX',
+  ]);
+
   private cachedTypes: string[] | null = null;
   private cachedSpecs: string[] | null = null;
 
@@ -257,59 +269,28 @@ export class ProductsService {
 
   async getTypes(): Promise<string[]> {
     if (this.cachedTypes) return this.cachedTypes;
-    const result = await this.productRepo
-      .createQueryBuilder('product')
-      .select('DISTINCT(product.type)', 'type')
-      .orderBy('product.type', 'ASC')
-      .getRawMany();
-
-    const dbTypes = result.map((r) => r.type).filter(Boolean);
+    const dbTypes = await this.productRepo.distinct('type');
     const combined = Array.from(new Set([...dbTypes, ...Array.from(this.registeredTypes)]));
     combined.sort((a, b) => a.localeCompare(b));
     this.cachedTypes = combined;
     return this.cachedTypes;
   }
 
-  async getSpecifications(): Promise<string[]> {
-    if (this.cachedSpecs) return this.cachedSpecs;
-    const result = await this.productRepo
-      .createQueryBuilder('product')
-      .select('DISTINCT(product.specification)', 'specification')
-      .orderBy('product.specification', 'ASC')
-      .getRawMany();
-
-    this.cachedSpecs = result.map((r) => r.specification).filter(Boolean);
-    return this.cachedSpecs;
+  async addSpecification(specification: string): Promise<string[]> {
+    const clean = specification.trim();
+    if (clean) {
+      this.registeredSpecs.add(clean);
+      this.invalidateMetadataCache();
+    }
+    return this.getSpecifications();
   }
 
-  private mapEntityToDto(item: ProductEntity): Product {
-    return {
-      id: item.id,
-      serialNumber: item.serialNumber,
-      condition: item.condition,
-      operationalStatus: item.operationalStatus,
-      photo: item.photo,
-      title: item.title,
-      type: item.type,
-      specification: item.specification,
-      guarantee: {
-        start: item.guaranteeStart ? item.guaranteeStart.toISOString() : '',
-        end: item.guaranteeEnd ? item.guaranteeEnd.toISOString() : '',
-      },
-      prices: (item.prices || []).map((pr) => ({
-        id: pr.id,
-        productId: pr.productId,
-        value: pr.value,
-        currencyCode: pr.currencyCode,
-        currencyRole: pr.currencyRole,
-      })),
-      orderId: item.orderId,
-      orderTitle: item.order?.title || undefined,
-      groupId: item.groupId,
-      groupTitle: item.group?.title || null,
-      assignedUserId: item.assignedUserId,
-      assignedUserName: item.assignedUser?.fullName || null,
-      createdAt: item.createdAt ? item.createdAt.toISOString() : '',
-    };
+  async getSpecifications(): Promise<string[]> {
+    if (this.cachedSpecs) return this.cachedSpecs;
+    const dbSpecs = await this.productRepo.distinct('specification');
+    const combined = Array.from(new Set([...dbSpecs, ...Array.from(this.registeredSpecs)]));
+    combined.sort((a, b) => a.localeCompare(b));
+    this.cachedSpecs = combined;
+    return this.cachedSpecs;
   }
 }

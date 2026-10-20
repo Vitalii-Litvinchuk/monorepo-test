@@ -1,15 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UserEntity } from '../../database/entities';
+import {
+  GenericRepository,
+  InjectGenericRepository,
+} from '../../database/repositories';
 import { AuthResponseDto, UserRole, UserTokenPayload } from '@dzencode/contracts';
+import { UserMapper } from '../../common/mappers';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
+    @InjectGenericRepository(UserEntity)
+    private readonly userRepo: GenericRepository<UserEntity>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -19,7 +22,8 @@ export class AuthService {
     fullName: string;
     avatarUrl: string;
   }): Promise<UserEntity> {
-    let user = await this.userRepo.findOne({
+    const rawRepo = this.userRepo.getRawRepository();
+    let user = await rawRepo.findOne({
       where: [{ googleId: data.googleId }, { email: data.email }],
     });
 
@@ -28,16 +32,14 @@ export class AuthService {
       // First user is ADMIN, subsequent users default to MANAGER for testing CRUD operations
       const role = userCount === 0 ? UserRole.ADMIN : UserRole.MANAGER;
 
-      user = this.userRepo.create({
+      user = await this.userRepo.create({
         googleId: data.googleId,
         email: data.email,
         fullName: data.fullName,
         avatarUrl: data.avatarUrl,
         role,
       });
-      user = await this.userRepo.save(user);
     } else {
-      // update avatar or name if changed
       let changed = false;
       if (data.avatarUrl && user.avatarUrl !== data.avatarUrl) {
         user.avatarUrl = data.avatarUrl;
@@ -48,7 +50,7 @@ export class AuthService {
         changed = true;
       }
       if (changed) {
-        user = await this.userRepo.save(user);
+        await rawRepo.save(user);
       }
     }
 
@@ -68,15 +70,7 @@ export class AuthService {
 
     return {
       accessToken,
-      user: {
-        id: user.id,
-        googleId: user.googleId,
-        email: user.email,
-        fullName: user.fullName,
-        avatarUrl: user.avatarUrl,
-        role: user.role,
-        createdAt: user.createdAt.toISOString(),
-      },
+      user: UserMapper.toDto(user),
     };
   }
 
@@ -86,26 +80,26 @@ export class AuthService {
   async devDemoLogin(email?: string): Promise<AuthResponseDto> {
     let user: UserEntity | null = null;
     if (email) {
-      user = await this.userRepo.findOne({ where: { email } });
+      user = await this.userRepo.findOneWhere({ email });
     }
     if (!user && !email) {
-      user = await this.userRepo.findOne({ where: {}, order: { createdAt: 'ASC' } });
+      const all = await this.userRepo.findAll({ orderBy: { createdAt: 'ASC' }, take: 1 });
+      user = all[0] || null;
     }
     if (!user) {
-      user = this.userRepo.create({
+      user = await this.userRepo.create({
         googleId: email ? `demo-${email}` : 'demo-google-user-1',
         email: email || 'alex.khrystorozhdestvensky@gmail.com',
         fullName: email ? email.split('@')[0] : 'Христорождественский Александр',
         avatarUrl: '/static/7c9e6679-7425-40de-944b-e07fc1f90ae7.png',
         role: UserRole.MANAGER,
       });
-      user = await this.userRepo.save(user);
     }
     return this.generateAuthResponse(user);
   }
 
   async getProfile(userId: string): Promise<UserEntity> {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOneById(userId);
     if (!user) {
       throw new UnauthorizedException('User profile not found');
     }

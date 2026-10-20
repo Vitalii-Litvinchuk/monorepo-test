@@ -10,11 +10,11 @@ describe('OrdersService Unit Tests', () => {
 
   beforeEach(() => {
     mockOrderRepo = {
-      find: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn((dto) => ({ ...dto, id: 'test-order-uuid', createdAt: new Date() })),
-      save: jest.fn(async (order) => order),
-      remove: jest.fn(),
+      findAll: jest.fn(),
+      findOneById: jest.fn(),
+      create: jest.fn(async (dto) => ({ ...dto, id: 'test-order-uuid', createdAt: new Date() })),
+      update: jest.fn(async (id, dto) => ({ id, ...dto, createdAt: new Date() })),
+      delete: jest.fn(async () => true),
     };
     mockEventEmitter = {
       emit: jest.fn(),
@@ -73,7 +73,7 @@ describe('OrdersService Unit Tests', () => {
       ],
     };
 
-    mockOrderRepo.find.mockResolvedValue([mockOrder]);
+    mockOrderRepo.findAll.mockResolvedValue([mockOrder]);
 
     const result = await service.findAll();
     expect(result).toHaveLength(1);

@@ -9,6 +9,17 @@ import {
   ProductEntity,
   ProductPriceEntity,
 } from './entities';
+import { createGenericRepositoryProvider } from './repositories/generic.repository';
+
+export const ENTITIES = [
+  UserEntity,
+  OrderEntity,
+  GroupEntity,
+  ProductEntity,
+  ProductPriceEntity,
+];
+
+const genericRepoProviders = ENTITIES.map(createGenericRepositoryProvider);
 
 // Find repository root where package.json and inventory.sqlite live
 function getDatabasePath(): string {
@@ -57,6 +68,7 @@ function getDatabasePath(): string {
       ProductPriceEntity,
     ]),
   ],
-  exports: [TypeOrmModule],
+  providers: [...genericRepoProviders],
+  exports: [TypeOrmModule, ...genericRepoProviders],
 })
 export class DatabaseModule {}

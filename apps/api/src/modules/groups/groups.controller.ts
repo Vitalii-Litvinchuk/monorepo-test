@@ -1,43 +1,18 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { GroupEntity } from '../../database/entities';
+import { GroupsService } from './groups.service';
 import { Group } from '@dzencode/contracts';
 
 @Controller('groups')
 export class GroupsController {
-  constructor(
-    @InjectRepository(GroupEntity)
-    private readonly groupRepo: Repository<GroupEntity>,
-  ) {}
+  constructor(private readonly groupsService: GroupsService) {}
 
   @Get()
   async findAll(): Promise<Group[]> {
-    const groups = await this.groupRepo.find({
-      relations: ['products'],
-      order: { title: 'ASC' },
-    });
-
-    return groups.map((g) => ({
-      id: g.id,
-      title: g.title,
-      description: g.description,
-      productsCount: g.products?.length || 0,
-    }));
+    return this.groupsService.findAll();
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Group | null> {
-    const g = await this.groupRepo.findOne({
-      where: { id },
-      relations: ['products'],
-    });
-    if (!g) return null;
-    return {
-      id: g.id,
-      title: g.title,
-      description: g.description,
-      productsCount: g.products?.length || 0,
-    };
+    return this.groupsService.findOne(id);
   }
 }
