@@ -23,7 +23,7 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    return [
+    const rules = [
       {
         source: '/api/:path*',
         destination: `${apiInternalUrl}/api/:path*`,
@@ -37,6 +37,28 @@ const nextConfig = {
         destination: `${apiInternalUrl}/graphql`,
       },
     ];
+
+    if (basePath) {
+      rules.push(
+        {
+          source: `${basePath}/api/:path*`,
+          destination: `${apiInternalUrl}/api/:path*`,
+          basePath: false,
+        },
+        {
+          source: `${basePath}/static/:path*`,
+          destination: `${apiInternalUrl}/static/:path*`,
+          basePath: false,
+        },
+        {
+          source: `${basePath}/graphql`,
+          destination: `${apiInternalUrl}/graphql`,
+          basePath: false,
+        },
+      );
+    }
+
+    return rules;
   },
 };
 

@@ -26,6 +26,12 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({
       if (savedViewMode && (savedViewMode === 'optimized-grid' || savedViewMode === 'classic-scroll')) {
         store.dispatch(setProductTableViewMode(savedViewMode));
       }
+
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+          // Ignore SW registration failure in non-HTTPS or test environments
+        });
+      }
     } catch {
       // Ignore localStorage restrictions
     }

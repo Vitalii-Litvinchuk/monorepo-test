@@ -32,7 +32,9 @@ export class AuthController {
     // Redirect to frontend callback page which extracts token into localStorage
     const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const frontendUrl = rawFrontendUrl.replace(/\/+$/, '');
-    res.redirect(`${frontendUrl}/auth/callback?token=${encodeURIComponent(authData.accessToken)}`);
+    const basePath = (process.env.BASE_PATH || process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/+$/, '').trim();
+    const effectiveBase = basePath && !frontendUrl.endsWith(basePath) ? (basePath.startsWith('/') ? basePath : `/${basePath}`) : '';
+    res.redirect(`${frontendUrl}${effectiveBase}/auth/callback?token=${encodeURIComponent(authData.accessToken)}`);
   }
 
   @Post('demo-login')
