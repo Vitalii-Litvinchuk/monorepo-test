@@ -2,8 +2,8 @@ version: '3.8'
 
 # ==============================================================================
 # Portainer Stack Template: Inventory Orders & Products
+# Domain: https://server.lab.mooo.com/test
 # Image: advanceddocker/monorepo-test:tagname
-# Subpath routing: /test (http://<HOST_IP>:3000/test)
 # ==============================================================================
 
 services:
@@ -12,18 +12,18 @@ services:
     container_name: inventory_monorepo_test
     restart: unless-stopped
     ports:
-      # Port 3000 serves Next.js Web and proxies /test/api, /test/static, /test/graphql internally to NestJS
+      # Port 3000 serves Next.js Web and proxies /test/api, /test/static, /test/graphql, and /test/socket.io to NestJS
       - "3000:3000"
-      # Optional: uncomment if direct external access to NestJS API is required without proxy
+      # Port 4000 can optionally be mapped directly to the host if external reverse proxy routes ws direct to backend
       # - "4000:4000"
     environment:
       # ------------------------------------------------------------------------
-      # Core Subpath & Routing Configuration (/test)
+      # Core Subpath & Domain Configuration
       # ------------------------------------------------------------------------
       - NODE_ENV=production
       - NEXT_PUBLIC_BASE_PATH=/test
       - BASE_PATH=/test
-      - FRONTEND_URL=http://localhost:3000/test
+      - FRONTEND_URL=https://server.lab.mooo.com/test
       - API_INTERNAL_URL=http://localhost:4000
       - PORT=3000
       - API_PORT=4000
@@ -44,12 +44,12 @@ services:
       # ------------------------------------------------------------------------
       - GOOGLE_CLIENT_ID=mock-google-client-id.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=mock-google-client-secret
-      - GOOGLE_CALLBACK_URL=http://localhost:3000/test/api/auth/google/callback
+      - GOOGLE_CALLBACK_URL=https://server.lab.mooo.com/test/api/auth/google/callback
 
       # ------------------------------------------------------------------------
       # WebSocket / Socket.io Real-Time Sessions
       # ------------------------------------------------------------------------
-      - NEXT_PUBLIC_WS_URL=http://localhost:3000
+      - NEXT_PUBLIC_WS_URL=https://server.lab.mooo.com
       - NEXT_PUBLIC_WS_PATH=/test/socket.io
     volumes:
       - inventory_data:/app/data

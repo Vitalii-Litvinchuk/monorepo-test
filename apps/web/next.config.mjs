@@ -36,6 +36,10 @@ const nextConfig = {
         source: '/graphql',
         destination: `${apiInternalUrl}/graphql`,
       },
+      {
+        source: '/socket.io/:path*',
+        destination: `${apiInternalUrl}/socket.io/:path*`,
+      },
     ];
 
     if (basePath) {
@@ -53,6 +57,11 @@ const nextConfig = {
         {
           source: `${basePath}/graphql`,
           destination: `${apiInternalUrl}/graphql`,
+          basePath: false,
+        },
+        {
+          source: `${basePath}/socket.io/:path*`,
+          destination: `${apiInternalUrl}/socket.io/:path*`,
           basePath: false,
         },
       );

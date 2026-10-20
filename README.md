@@ -268,15 +268,15 @@ docker push advanceddocker/monorepo-test:tagname
 When deploying to Portainer, create a new Stack (**Stacks -> Add Stack -> Web editor**) and paste the following compose specification.
 
 > [!IMPORTANT]
-> The template comes **pre-configured for subpath hosting behind `/test`** (e.g. `http://<SERVER_IP>:3000/test`). Replace `localhost` with your server's public IP or domain name.
+> The template comes **pre-configured for subpath hosting behind `/test`** at `https://server.lab.mooo.com/test`.
 
 ```yaml
 version: '3.8'
 
 # ==============================================================================
 # Portainer Stack Template: Inventory Orders & Products
+# Domain: https://server.lab.mooo.com/test
 # Image: advanceddocker/monorepo-test:tagname
-# Subpath routing: /test (http://<HOST_IP>:3000/test)
 # ==============================================================================
 
 services:
@@ -285,16 +285,18 @@ services:
     container_name: inventory_monorepo_test
     restart: unless-stopped
     ports:
-      # Port 3000 serves Next.js Web and proxies /test/api, /test/static, /test/graphql internally to NestJS
+      # Port 3000 serves Next.js Web and proxies /test/api, /test/static, /test/graphql, and /test/socket.io to NestJS
       - "3000:3000"
+      # Port 4000 can optionally be mapped directly to the host if external reverse proxy routes ws direct to backend
+      # - "4000:4000"
     environment:
       # ------------------------------------------------------------------------
-      # Core Subpath & Routing Configuration (/test)
+      # Core Subpath & Domain Configuration
       # ------------------------------------------------------------------------
       - NODE_ENV=production
       - NEXT_PUBLIC_BASE_PATH=/test
       - BASE_PATH=/test
-      - FRONTEND_URL=http://localhost:3000/test
+      - FRONTEND_URL=https://server.lab.mooo.com/test
       - API_INTERNAL_URL=http://localhost:4000
       - PORT=3000
       - API_PORT=4000
@@ -311,16 +313,16 @@ services:
       - JWT_SECRET=dzencode-enterprise-production-jwt-secret-2026
 
       # ------------------------------------------------------------------------
-      # Google OAuth 2.0 (Demo Mode active by default; replace with real keys if desired)
+      # Google OAuth 2.0 (Demo Mode active by default; replace with real credentials if desired)
       # ------------------------------------------------------------------------
       - GOOGLE_CLIENT_ID=mock-google-client-id.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=mock-google-client-secret
-      - GOOGLE_CALLBACK_URL=http://localhost:3000/test/api/auth/google/callback
+      - GOOGLE_CALLBACK_URL=https://server.lab.mooo.com/test/api/auth/google/callback
 
       # ------------------------------------------------------------------------
       # WebSocket / Socket.io Real-Time Sessions
       # ------------------------------------------------------------------------
-      - NEXT_PUBLIC_WS_URL=http://localhost:3000
+      - NEXT_PUBLIC_WS_URL=https://server.lab.mooo.com
       - NEXT_PUBLIC_WS_PATH=/test/socket.io
     volumes:
       - inventory_data:/app/data
