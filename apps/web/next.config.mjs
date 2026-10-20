@@ -69,20 +69,29 @@ const nextConfig = {
           destination: `${apiInternalUrl}/static/:path*`,
           basePath: false,
         },
+      );
+    }
+
+    return rules;
+  },
+  async redirects() {
+    if (basePath) {
+      return [
         {
           source: '/manifest.json',
           destination: `${basePath}/manifest.json`,
+          permanent: false,
           basePath: false,
         },
         {
           source: '/sw.js',
           destination: `${basePath}/sw.js`,
+          permanent: false,
           basePath: false,
         },
-      );
+      ];
     }
-
-    return rules;
+    return [];
   },
 };
 
