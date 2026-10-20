@@ -1,16 +1,17 @@
 #!/bin/sh
 set -e
 
-DB_FILE="${DB_PATH:-/app/inventory.sqlite}"
-UPLOADS="${UPLOADS_DIR:-/app/uploads}"
+DB_FILE="${DB_PATH:-/app/data/inventory.sqlite}"
+UPLOADS="${UPLOADS_DIR:-/app/data/uploads}"
+export JWT_SECRET="${JWT_SECRET:-dzencode-production-secret-jwt-key-2026}"
 
-# Ensure uploads directory exists
-mkdir -p "$UPLOADS"
+# Ensure parent directory of database and uploads exist
+mkdir -p "$(dirname "$DB_FILE")" "$UPLOADS"
 
 # Auto-seed SQLite database if not present or empty
 if [ ! -f "$DB_FILE" ] || [ ! -s "$DB_FILE" ]; then
-  echo "[Entrypoint] Database not found. Initializing seed data into $DB_FILE..."
-  node apps/api/dist/database/seed.js || npm run seed || echo "[Entrypoint] Seed skipped or completed."
+  echo "[Entrypoint] Database not found at $DB_FILE. Initializing seed data..."
+  node apps/api/dist/database/seed.js || npm run seed || echo "[Entrypoint] Seed completed or handled."
 fi
 
 case "$1" in
