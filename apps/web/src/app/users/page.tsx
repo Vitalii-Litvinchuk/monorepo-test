@@ -5,6 +5,7 @@ import { apiClient } from '../../services/api-client';
 import { User } from '@dzencode/contracts';
 import { UserCheck } from 'lucide-react';
 import { useTranslation } from '../../i18n';
+import { getStaticUrl } from '../../utils/url';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -51,9 +52,12 @@ export default function UsersPage() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={u.avatarUrl}
+                src={getStaticUrl(u.avatarUrl)}
                 alt={u.fullName}
                 style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/avatar.png';
+                }}
               />
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>

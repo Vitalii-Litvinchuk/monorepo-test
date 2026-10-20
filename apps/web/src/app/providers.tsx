@@ -28,7 +28,10 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({
       }
 
       if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
+        const swBase = process.env.NEXT_PUBLIC_BASE_PATH
+          ? process.env.NEXT_PUBLIC_BASE_PATH.replace(/\/+$/, '')
+          : '';
+        navigator.serviceWorker.register(`${swBase}/sw.js`).catch(() => {
           // Ignore SW registration failure in non-HTTPS or test environments
         });
       }

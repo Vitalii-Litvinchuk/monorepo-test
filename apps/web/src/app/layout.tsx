@@ -4,10 +4,14 @@ import { Providers } from './providers';
 import { TopMenu } from '../components/top-menu';
 import { NavigationMenu } from '../components/navigation-menu';
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH
+  ? process.env.NEXT_PUBLIC_BASE_PATH.replace(/\/+$/, '')
+  : '';
+
 export const metadata: Metadata = {
   title: 'Inventory - Orders & Products',
   description: 'Enterprise Inventory Management System (Orders & Products)',
-  manifest: '/manifest.json',
+  manifest: `${basePath}/manifest.json`,
 };
 
 export default function RootLayout({

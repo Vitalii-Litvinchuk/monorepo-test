@@ -64,6 +64,21 @@ const nextConfig = {
           destination: `${apiInternalUrl}/socket.io/:path*`,
           basePath: false,
         },
+        {
+          source: '/static/:path*',
+          destination: `${apiInternalUrl}/static/:path*`,
+          basePath: false,
+        },
+        {
+          source: '/manifest.json',
+          destination: `${basePath}/manifest.json`,
+          basePath: false,
+        },
+        {
+          source: '/sw.js',
+          destination: `${basePath}/sw.js`,
+          basePath: false,
+        },
       );
     }
 
