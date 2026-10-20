@@ -6,6 +6,9 @@ export const WS_EVENTS = {
   PRODUCT_CREATED: 'product:created',
   PRODUCT_UPDATED: 'product:updated',
   PRODUCT_DELETED: 'product:deleted',
+  GROUP_CREATED: 'group:created',
+  GROUP_UPDATED: 'group:updated',
+  GROUP_DELETED: 'group:deleted',
 } as const;
 
 export interface ActiveSessionsPayload {

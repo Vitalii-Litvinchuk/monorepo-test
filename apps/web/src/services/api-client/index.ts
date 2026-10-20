@@ -1,5 +1,7 @@
 import {
   AuthResponseDto,
+  CreateGroupDto,
+  UpdateGroupDto,
   CreateOrderDto,
   UpdateOrderDto,
   CreateProductDto,
@@ -42,6 +44,19 @@ class ApiClient {
     });
 
     if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined' && !endpoint.includes('/auth/')) {
+        try {
+          const authRes = await this.demoLogin();
+          headers['Authorization'] = `Bearer ${authRes.accessToken}`;
+          const retryRes = await fetch(url, { ...options, headers });
+          if (retryRes.ok) {
+            return retryRes.json();
+          }
+        } catch {
+          // Fall through to standard error parsing
+        }
+      }
+
       let errorData: ProblemDetails;
       try {
         errorData = await response.json();
@@ -172,6 +187,26 @@ class ApiClient {
   // Groups & Users
   async getGroups(): Promise<Group[]> {
     return this.request<Group[]>('/api/groups');
+  }
+
+  async createGroup(dto: CreateGroupDto): Promise<Group> {
+    return this.request<Group>('/api/groups', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateGroup(id: string, dto: UpdateGroupDto): Promise<Group> {
+    return this.request<Group>(`/api/groups/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async deleteGroup(id: string): Promise<{ success: boolean; id: string }> {
+    return this.request<{ success: boolean; id: string }>(`/api/groups/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   async getUsers(): Promise<User[]> {

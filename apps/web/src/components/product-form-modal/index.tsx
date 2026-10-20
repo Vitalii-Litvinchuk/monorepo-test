@@ -6,6 +6,8 @@ import styles from './product-form-modal.module.scss';
 import {
   Product,
   Order,
+  Group,
+  User,
   ProductCondition,
   ProductOperationalStatus,
   CurrencyCode,
@@ -18,7 +20,10 @@ import { useTranslation } from '../../i18n';
 interface ProductFormModalProps {
   product?: Product | null;
   orders: Order[];
+  groups?: Group[];
+  users?: User[];
   availableTypes?: string[];
+  availableSpecifications?: string[];
   defaultOrderId?: string | null;
   isOpen: boolean;
   onClose: () => void;
@@ -26,11 +31,15 @@ interface ProductFormModalProps {
 }
 
 const DEFAULT_TYPES = ['Monitors', 'Laptops', 'Smartphones', 'Tablets'];
+const DEFAULT_SPECS = ['Specification 1', 'Specification 2', 'Specification 3'];
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   product,
   orders,
+  groups = [],
+  users = [],
   availableTypes = DEFAULT_TYPES,
+  availableSpecifications = DEFAULT_SPECS,
   defaultOrderId,
   isOpen,
   onClose,
@@ -47,6 +56,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     ProductOperationalStatus.AVAILABLE,
   );
   const [orderId, setOrderId] = useState('');
+  const [groupId, setGroupId] = useState('');
+  const [assignedUserId, setAssignedUserId] = useState('');
   const [guaranteeStart, setGuaranteeStart] = useState('');
   const [guaranteeEnd, setGuaranteeEnd] = useState('');
   const [priceUsd, setPriceUsd] = useState('100');
@@ -68,6 +79,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCondition(product.condition || ProductCondition.NEW);
       setOperationalStatus(product.operationalStatus || ProductOperationalStatus.AVAILABLE);
       setOrderId(product.orderId || defaultOrderId || (orders[0]?.id ?? ''));
+      setGroupId(product.groupId || '');
+      setAssignedUserId(product.assignedUserId || '');
       setPhoto(product.photo || '550e8400-e29b-41d4-a716-446655440000.png');
 
       if (product.guarantee?.start) {
@@ -96,6 +109,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setCondition(ProductCondition.NEW);
       setOperationalStatus(ProductOperationalStatus.AVAILABLE);
       setOrderId(defaultOrderId || (orders[0]?.id ?? ''));
+      setGroupId('');
+      setAssignedUserId('');
       setPhoto('550e8400-e29b-41d4-a716-446655440000.png');
 
       const today = new Date().toISOString().substring(0, 10);
@@ -107,7 +122,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setPriceUah('4100');
     }
     setError(null);
-  }, [product, defaultOrderId, isOpen]);
+  }, [product, defaultOrderId, orders, availableTypes, isOpen]);
 
   if (!isOpen) return null;
 
@@ -163,6 +178,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           condition,
           operationalStatus,
           orderId,
+          groupId: groupId ? groupId : null,
+          assignedUserId: assignedUserId ? assignedUserId : null,
           guaranteeStart: new Date(guaranteeStart).toISOString(),
           guaranteeEnd: new Date(guaranteeEnd).toISOString(),
           prices,
@@ -178,6 +195,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           condition,
           operationalStatus,
           orderId,
+          groupId: groupId ? groupId : null,
+          assignedUserId: assignedUserId ? assignedUserId : null,
           guaranteeStart: new Date(guaranteeStart).toISOString(),
           guaranteeEnd: new Date(guaranteeEnd).toISOString(),
           prices,
@@ -280,11 +299,49 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <label>{t.products.specification}</label>
                 <input
                   type="text"
+                  list="product-form-specs-list"
                   value={specification}
                   onChange={(e) => setSpecification(e.target.value)}
                   placeholder="Specification 1"
                   required
                 />
+                <datalist id="product-form-specs-list">
+                  {availableSpecifications.map((spec) => (
+                    <option key={spec} value={spec}>
+                      {spec}
+                    </option>
+                  ))}
+                </datalist>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>{t.products.assignGroup}</label>
+                <select
+                  value={groupId}
+                  onChange={(e) => setGroupId(e.target.value)}
+                >
+                  <option value="">-- {t.products.notAssigned} --</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>{t.products.assignUser}</label>
+                <select
+                  value={assignedUserId}
+                  onChange={(e) => setAssignedUserId(e.target.value)}
+                >
+                  <option value="">-- {t.products.notAssigned} --</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.fullName || u.email}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.formGroup}>

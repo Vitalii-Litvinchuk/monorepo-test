@@ -26,12 +26,19 @@ export const demoLoginThunk = createAsyncThunk(
 export const checkAuthThunk = createAsyncThunk('auth/checkAuth', async () => {
   if (typeof window === 'undefined') return null;
   const token = localStorage.getItem('auth_token');
-  if (!token) return null;
+  if (token) {
+    try {
+      const user = await apiClient.getMe();
+      return { user, token };
+    } catch {
+      apiClient.logout();
+    }
+  }
+  // Auto-authenticate so users can immediately create products, orders and groups
   try {
-    const user = await apiClient.getMe();
-    return { user, token };
+    const demo = await apiClient.demoLogin();
+    return { user: demo.user, token: demo.accessToken };
   } catch {
-    apiClient.logout();
     return null;
   }
 });

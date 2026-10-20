@@ -123,6 +123,21 @@ export interface Translations {
     title: string;
     loading: string;
     productsInGroup: string;
+    addGroup: string;
+    editGroup: string;
+    deleteGroup: string;
+    deleteGroupConfirmTitle: string;
+    createGroupModalTitle: string;
+    editGroupModalTitle: string;
+    groupTitleLabel: string;
+    groupTitlePlaceholder: string;
+    groupDescLabel: string;
+    groupDescPlaceholder: string;
+    searchPlaceholder: string;
+    empty: string;
+    save: string;
+    saving: string;
+    cancel: string;
   };
   analytics: {
     title: string;

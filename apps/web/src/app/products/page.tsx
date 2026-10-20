@@ -17,6 +17,8 @@ import {
   deleteProduct,
 } from '../../store/slices/products-slice';
 import { fetchOrders } from '../../store/slices/orders-slice';
+import { fetchGroups } from '../../store/slices/groups-slice';
+import { apiClient } from '../../services/api-client';
 import { ProductRow } from '../../components/product-row';
 import { ViewModeToggle } from '../../components/view-mode-toggle';
 import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
@@ -26,7 +28,7 @@ import { CustomSelect } from '../../components/custom-select';
 import { Tooltip } from '../../components/tooltip';
 import { ProductsSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
-import { Product, CreateProductDto, UpdateProductDto } from '@dzencode/contracts';
+import { Product, CreateProductDto, UpdateProductDto, User } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
 
 export default function ProductsPage() {
@@ -42,6 +44,8 @@ export default function ProductsPage() {
     loading,
   } = useAppSelector((state) => state.products);
   const { items: orders } = useAppSelector((state) => state.orders);
+  const groups = useAppSelector((state) => state.groups?.items ?? []);
+  const [users, setUsers] = useState<User[]>([]);
   const viewMode = useAppSelector((state) => state.ui.productTableViewMode);
   const { t, formatProductType } = useTranslation();
 
@@ -52,7 +56,7 @@ export default function ProductsPage() {
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch filter metadata and orders if not loaded
+  // Fetch filter metadata, orders, groups, users if not loaded
   useEffect(() => {
     if (types.length === 0) {
       dispatch(fetchProductTypes());
@@ -63,7 +67,11 @@ export default function ProductsPage() {
     if (orders.length === 0) {
       dispatch(fetchOrders());
     }
-  }, [dispatch, types.length, specifications.length, orders.length]);
+    if (groups.length === 0) {
+      dispatch(fetchGroups());
+    }
+    apiClient.getUsers().then(setUsers).catch(console.error);
+  }, [dispatch, types.length, specifications.length, orders.length, groups.length]);
 
   // Fetch products with debounced search query
   useEffect(() => {
@@ -101,6 +109,8 @@ export default function ProductsPage() {
     // Refresh products, types and specifications
     dispatch(fetchProductTypes());
     dispatch(fetchProductSpecifications());
+    dispatch(fetchOrders());
+    dispatch(fetchGroups());
     dispatch(
       fetchProducts({
         type: selectedType,
@@ -138,6 +148,8 @@ export default function ProductsPage() {
       dispatch(setProductToDelete(null));
       dispatch(fetchProductTypes());
       dispatch(fetchProductSpecifications());
+      dispatch(fetchOrders());
+      dispatch(fetchGroups());
       dispatch(
         fetchProducts({
           type: selectedType,
@@ -412,7 +424,10 @@ export default function ProductsPage() {
       <ProductFormModal
         product={productToEdit}
         orders={orders}
+        groups={groups}
+        users={users}
         availableTypes={types}
+        availableSpecifications={specifications}
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);

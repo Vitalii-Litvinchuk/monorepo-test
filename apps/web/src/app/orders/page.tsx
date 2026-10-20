@@ -15,7 +15,11 @@ import {
 import {
   createProduct,
   deleteProduct,
+  fetchProductTypes,
+  fetchProductSpecifications,
 } from '../../store/slices/products-slice';
+import { fetchGroups } from '../../store/slices/groups-slice';
+import { apiClient } from '../../services/api-client';
 import { OrderCard } from '../../components/order-card';
 import { OrderDetailPanel } from '../../components/order-detail-panel';
 import { DeleteConfirmModal } from '../../components/delete-confirm-modal';
@@ -23,7 +27,7 @@ import { OrderFormModal } from '../../components/order-form-modal';
 import { ProductFormModal } from '../../components/product-form-modal';
 import { OrdersSkeletonList } from '../../components/skeleton';
 import { useDebounce } from '../../utils/use-debounce';
-import { Order, Product, CreateProductDto } from '@dzencode/contracts';
+import { Order, Product, CreateProductDto, User } from '@dzencode/contracts';
 import { useTranslation } from '../../i18n';
 
 import { Tooltip } from '../../components/tooltip';
@@ -33,6 +37,9 @@ export default function OrdersPage() {
   const { items: orders, selectedOrderId, orderToDelete, orderToEdit, loading } = useAppSelector(
     (state) => state.orders,
   );
+  const groups = useAppSelector((state) => state.groups?.items ?? []);
+  const { types, specifications } = useAppSelector((state) => state.products);
+  const [users, setUsers] = useState<User[]>([]);
   const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +55,10 @@ export default function OrdersPage() {
 
   useEffect(() => {
     dispatch(fetchOrders());
+    dispatch(fetchGroups());
+    dispatch(fetchProductTypes());
+    dispatch(fetchProductSpecifications());
+    apiClient.getUsers().then(setUsers).catch(console.error);
   }, [dispatch]);
 
   const selectedOrder = useMemo(
@@ -131,7 +142,8 @@ export default function OrdersPage() {
     setIsDeletingProduct(true);
     try {
       await dispatch(deleteProduct(productToDelete.id)).unwrap();
-      dispatch(fetchOrders());
+      await dispatch(fetchOrders()).unwrap();
+      dispatch(fetchGroups());
       setProductToDelete(null);
     } catch (err) {
       console.error('Failed to delete product from order:', err);
@@ -143,7 +155,8 @@ export default function OrdersPage() {
   // Product Add Handler (inside Detail Panel)
   const handleSaveProduct = async (dto: any) => {
     await dispatch(createProduct(dto as CreateProductDto)).unwrap();
-    dispatch(fetchOrders());
+    await dispatch(fetchOrders()).unwrap();
+    dispatch(fetchGroups());
   };
 
   return (
@@ -343,6 +356,10 @@ export default function OrdersPage() {
       {selectedOrder && (
         <ProductFormModal
           orders={orders}
+          groups={groups}
+          users={users}
+          availableTypes={types}
+          availableSpecifications={specifications}
           defaultOrderId={selectedOrder.id}
           isOpen={isAddingProduct}
           onClose={() => setIsAddingProduct(false)}

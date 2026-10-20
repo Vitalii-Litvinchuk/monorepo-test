@@ -7,6 +7,7 @@ import uiReducer from '../src/store/slices/ui-slice';
 import authReducer from '../src/store/slices/auth-slice';
 import sessionReducer from '../src/store/slices/session-slice';
 import productsReducer from '../src/store/slices/products-slice';
+import groupsReducer from '../src/store/slices/groups-slice';
 import OrdersPage from '../src/app/orders/page';
 import { CurrencyCode, PriceCurrencyRole, ProductCondition, ProductOperationalStatus } from '@dzencode/contracts';
 
@@ -52,6 +53,10 @@ jest.mock('../src/services/api-client', () => ({
       },
     ]),
     deleteOrder: jest.fn().mockResolvedValue({ success: true, id: 'ord-integ-1' }),
+    getGroups: jest.fn().mockResolvedValue([]),
+    getUsers: jest.fn().mockResolvedValue([]),
+    getProductTypes: jest.fn().mockResolvedValue(['Monitors', 'Laptops']),
+    getProductSpecifications: jest.fn().mockResolvedValue(['Spec 1', 'Spec 2']),
   },
 }));
 
@@ -60,6 +65,7 @@ function renderWithStore() {
     reducer: {
       orders: ordersReducer,
       products: productsReducer,
+      groups: groupsReducer,
       ui: uiReducer,
       auth: authReducer,
       session: sessionReducer,

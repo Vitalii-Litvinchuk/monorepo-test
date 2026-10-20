@@ -7,6 +7,7 @@ import uiReducer, { setLanguage } from '../src/store/slices/ui-slice';
 import authReducer from '../src/store/slices/auth-slice';
 import sessionReducer from '../src/store/slices/session-slice';
 import productsReducer from '../src/store/slices/products-slice';
+import groupsReducer from '../src/store/slices/groups-slice';
 import ProductsPage from '../src/app/products/page';
 
 // Mock apiClient to prevent real network calls
@@ -102,6 +103,9 @@ jest.mock('../src/services/api-client', () => ({
       }),
     ),
     deleteProduct: jest.fn().mockResolvedValue({ success: true, id: 'prod-test-1' }),
+    getGroups: jest.fn().mockResolvedValue([]),
+    getUsers: jest.fn().mockResolvedValue([]),
+    getOrders: jest.fn().mockResolvedValue([]),
   },
 }));
 
@@ -110,6 +114,7 @@ function renderProductsWithStore() {
     reducer: {
       orders: ordersReducer,
       products: productsReducer,
+      groups: groupsReducer,
       ui: uiReducer,
       auth: authReducer,
       session: sessionReducer,

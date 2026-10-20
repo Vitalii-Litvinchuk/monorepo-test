@@ -50,6 +50,13 @@ export interface CreateOrderDto {
 
 export interface UpdateOrderDto extends Partial<CreateOrderDto> {}
 
+export interface CreateGroupDto {
+  title: string;
+  description?: string;
+}
+
+export interface UpdateGroupDto extends Partial<CreateGroupDto> {}
+
 export interface ProductFilterQuery {
   type?: string;
   specification?: string;
