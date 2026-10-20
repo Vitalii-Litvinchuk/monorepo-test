@@ -1,4 +1,4 @@
-const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '/test-web';
 const cleanBasePath = rawBasePath.replace(/\/+$/, '').trim();
 const basePath = cleanBasePath ? (cleanBasePath.startsWith('/') ? cleanBasePath : `/${cleanBasePath}`) : undefined;
 const apiInternalUrl = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replace(/\/+$/, '');

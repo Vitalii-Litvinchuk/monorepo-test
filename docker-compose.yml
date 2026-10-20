@@ -1,44 +1,65 @@
 version: '3.8'
 
 # ==============================================================================
-# Docker Compose for dzencode Monorepo
-# Image: advanceddocker/monorepo-test:tagname
-# Subpath: /test
+# Docker Compose: Inventory Orders & Products
+# Frontend: http://localhost:3000/test-web
+# Backend:  http://localhost:4000/test-api
 # ==============================================================================
 
 services:
-  # Option 1: All-In-One Service (Recommended for simple Portainer & Single Host deployment)
-  inventory-app:
+  inventory-api:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        - BASE_PATH=/test
-    image: advanceddocker/monorepo-test:tagname
-    container_name: dzencode_monorepo_app
+        BASE_PATH: /test-web
+    image: advanceddocker/monorepo-test:v.1
+    container_name: inventory_api
     restart: unless-stopped
+    command: ["api"]
     ports:
-      - "3000:3000"
       - "4000:4000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_BASE_PATH=/test
-      - BASE_PATH=/test
-      - FRONTEND_URL=http://localhost:3000/test
-      - API_INTERNAL_URL=http://localhost:4000
-      - PORT=3000
-      - API_PORT=4000
+      - PORT=4000
+      - API_BASE_PATH=/test-api
+      - FRONTEND_URL=http://localhost:3000/test-web
       - DB_PATH=/app/data/inventory.sqlite
       - UPLOADS_DIR=/app/data/uploads
       - JWT_SECRET=dzencode-enterprise-production-jwt-secret-2026
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-mock-google-client-id}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-mock-google-client-secret}
-      - GOOGLE_CALLBACK_URL=http://localhost:3000/test/api/auth/google/callback
-      - NEXT_PUBLIC_WS_URL=http://localhost:3000
-      - NEXT_PUBLIC_WS_PATH=/test/socket.io
+      - GOOGLE_CLIENT_ID=mock-google-client-id.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=mock-google-client-secret
+      - GOOGLE_CALLBACK_URL=http://localhost:4000/test-api/api/auth/google/callback
+    volumes:
+      - inventory_data:/app/data
+
+  inventory-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BASE_PATH: /test-web
+    image: advanceddocker/monorepo-test:v.1
+    container_name: inventory_web
+    restart: unless-stopped
+    command: ["web"]
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_BASE_PATH=/test-web
+      - BASE_PATH=/test-web
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/test-api
+      - NEXT_PUBLIC_WS_URL=http://localhost:4000
+      - NEXT_PUBLIC_WS_PATH=/test-api/socket.io
+      - API_INTERNAL_URL=http://inventory-api:4000
+    depends_on:
+      - inventory-api
     volumes:
       - inventory_data:/app/data
 
 volumes:
   inventory_data:
-    name: dzencode_inventory_data
+    name: inventory_monorepo_data
+    driver: local

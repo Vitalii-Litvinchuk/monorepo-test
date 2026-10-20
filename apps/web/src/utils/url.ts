@@ -1,49 +1,40 @@
 /**
- * URL and subpath helper for deployments with subpaths (e.g. https://path/test)
+ * URL and subpath helper configured directly via environment settings.
+ * Fixed non-root subpaths configured via NEXT_PUBLIC_BASE_PATH and NEXT_PUBLIC_API_URL.
  */
 
 export function getBasePath(): string {
-  // 1. Build-time or runtime environment variable
-  if (process.env.NEXT_PUBLIC_BASE_PATH) {
-    const envBase = process.env.NEXT_PUBLIC_BASE_PATH.replace(/\/+$/, '');
-    if (envBase) {
-      return envBase.startsWith('/') ? envBase : `/${envBase}`;
-    }
-  }
+  const base = process.env.NEXT_PUBLIC_BASE_PATH || '/test-web';
+  return base.replace(/\/+$/, '');
+}
 
-  // 2. Browser runtime detection (e.g. pathname starts with /test)
-  if (typeof window !== 'undefined') {
-    const pathname = window.location.pathname;
-    if (pathname === '/test' || pathname.startsWith('/test/')) {
-      return '/test';
-    }
-  }
-
-  return '';
+export function getApiBaseUrl(): string {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || '/test-api';
+  return apiBase.replace(/\/+$/, '');
 }
 
 /**
- * Formats API endpoints to always include base path when running under subpath
- * e.g. '/api/orders' -> '/test/api/orders' when base path is '/test'
+ * Formats API endpoints to prepend configured API base path
+ * e.g. '/api/orders' -> '/test-api/api/orders'
  */
 export function getApiUrl(path: string): string {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
 
-  const base = getBasePath();
+  const apiBase = getApiBaseUrl();
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
 
-  if (base && (cleanPath === base || cleanPath.startsWith(`${base}/`))) {
+  if (apiBase && (cleanPath === apiBase || cleanPath.startsWith(`${apiBase}/`))) {
     return cleanPath;
   }
 
-  return `${base}${cleanPath}`;
+  return `${apiBase}${cleanPath}`;
 }
 
 /**
- * Formats static asset URLs (photos, avatars) to always include base path
- * e.g. '550e8400.png' or '/static/550e8400.png' -> '/test/static/550e8400.png'
+ * Formats static asset URLs to point to configured backend static server
+ * e.g. 'uuid-123.png' -> '/test-api/static/uuid-123.png'
  */
 export function getStaticUrl(photoOrPath?: string | null): string {
   if (!photoOrPath) return '';
@@ -51,29 +42,30 @@ export function getStaticUrl(photoOrPath?: string | null): string {
     return photoOrPath;
   }
 
-  const base = getBasePath();
   let clean = photoOrPath.trim();
-
-  // If only a filename, prepend /static/
   if (!clean.startsWith('/')) {
     clean = `/static/${clean}`;
   }
 
-  // If already prefixed with base, return as is
-  if (base && (clean === base || clean.startsWith(`${base}/`))) {
+  const apiBase = getApiBaseUrl();
+  if (apiBase && (clean === apiBase || clean.startsWith(`${apiBase}/`))) {
     return clean;
   }
 
-  return `${base}${clean}`;
+  return `${apiBase}${clean}`;
 }
 
 /**
- * Formats WebSocket path for Socket.io (e.g. '/test/socket.io')
+ * Formats WebSocket path for Socket.io from environment settings
+ * e.g. '/test-api/socket.io'
  */
 export function getWsPath(): string {
-  if (process.env.NEXT_PUBLIC_WS_PATH) {
+  if (process.env.NEXT_PUBLIC_WS_PATH && process.env.NEXT_PUBLIC_WS_PATH !== 'undefined') {
     return process.env.NEXT_PUBLIC_WS_PATH;
   }
-  const base = getBasePath();
-  return `${base}/socket.io`;
+  const apiBase = getApiBaseUrl();
+  const urlPath = apiBase.startsWith('http')
+    ? new URL(apiBase).pathname.replace(/\/+$/, '')
+    : apiBase;
+  return `${urlPath}/socket.io`;
 }

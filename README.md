@@ -268,62 +268,67 @@ docker push advanceddocker/monorepo-test:tagname
 When deploying to Portainer, create a new Stack (**Stacks -> Add Stack -> Web editor**) and paste the following compose specification.
 
 > [!IMPORTANT]
-> The template comes **pre-configured for subpath hosting behind `/test`** at `https://server.lab.mooo.com/test`.
+> The template separates Frontend and Backend routes cleanly to prevent path collisions:
+> - **Frontend Web Route**: `https://server.lab.mooo.com/test-web` (port 3000)
+> - **Backend API Route**: `https://server.lab.mooo.com/test-api` (port 4000)
 
 ```yaml
 version: '3.8'
 
 # ==============================================================================
 # Portainer Stack Template: Inventory Orders & Products
-# Domain: https://server.lab.mooo.com/test
-# Image: advanceddocker/monorepo-test:tagname
+# Domain: https://server.lab.mooo.com
+# Web UI Route:  /test-web (https://server.lab.mooo.com/test-web)
+# Backend Route: /test-api (https://server.lab.mooo.com/test-api)
+# Image: advanceddocker/monorepo-test:v.1
 # ==============================================================================
 
 services:
-  inventory-app:
-    image: advanceddocker/monorepo-test:tagname
-    container_name: inventory_monorepo_test
+  # ----------------------------------------------------------------------------
+  # 1. Backend Service (NestJS API + WebSockets + SQLite)
+  # ----------------------------------------------------------------------------
+  inventory-api:
+    image: advanceddocker/monorepo-test:v.1
+    container_name: inventory_api
     restart: unless-stopped
+    command: ["api"]
     ports:
-      # Port 3000 serves Next.js Web and proxies /test/api, /test/static, /test/graphql, and /test/socket.io to NestJS
-      - "3000:3000"
-      # Port 4000 can optionally be mapped directly to the host if external reverse proxy routes ws direct to backend
-      # - "4000:4000"
+      - "4000:4000"
     environment:
-      # ------------------------------------------------------------------------
-      # Core Subpath & Domain Configuration
-      # ------------------------------------------------------------------------
       - NODE_ENV=production
-      - NEXT_PUBLIC_BASE_PATH=/test
-      - BASE_PATH=/test
-      - FRONTEND_URL=https://server.lab.mooo.com/test
-      - API_INTERNAL_URL=http://localhost:4000
-      - PORT=3000
-      - API_PORT=4000
-
-      # ------------------------------------------------------------------------
-      # Database & Persistence (Mounted to named volume)
-      # ------------------------------------------------------------------------
+      - PORT=4000
+      - API_BASE_PATH=/test-api
+      - FRONTEND_URL=https://server.lab.mooo.com/test-web
       - DB_PATH=/app/data/inventory.sqlite
       - UPLOADS_DIR=/app/data/uploads
-
-      # ------------------------------------------------------------------------
-      # Security & JWT Authentication
-      # ------------------------------------------------------------------------
       - JWT_SECRET=dzencode-enterprise-production-jwt-secret-2026
-
-      # ------------------------------------------------------------------------
-      # Google OAuth 2.0 (Demo Mode active by default; replace with real credentials if desired)
-      # ------------------------------------------------------------------------
       - GOOGLE_CLIENT_ID=mock-google-client-id.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=mock-google-client-secret
-      - GOOGLE_CALLBACK_URL=https://server.lab.mooo.com/test/api/auth/google/callback
+      - GOOGLE_CALLBACK_URL=https://server.lab.mooo.com/test-api/api/auth/google/callback
+    volumes:
+      - inventory_data:/app/data
 
-      # ------------------------------------------------------------------------
-      # WebSocket / Socket.io Real-Time Sessions
-      # ------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # 2. Frontend Service (Next.js Web / SSR)
+  # ----------------------------------------------------------------------------
+  inventory-web:
+    image: advanceddocker/monorepo-test:v.1
+    container_name: inventory_web
+    restart: unless-stopped
+    command: ["web"]
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_BASE_PATH=/test-web
+      - BASE_PATH=/test-web
+      - NEXT_PUBLIC_API_URL=https://server.lab.mooo.com/test-api
       - NEXT_PUBLIC_WS_URL=https://server.lab.mooo.com
-      - NEXT_PUBLIC_WS_PATH=/test/socket.io
+      - NEXT_PUBLIC_WS_PATH=/test-api/socket.io
+      - API_INTERNAL_URL=http://inventory-api:4000
+    depends_on:
+      - inventory-api
     volumes:
       - inventory_data:/app/data
 

@@ -13,9 +13,10 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Base path for Next.js subpath routing (/test)
-ARG BASE_PATH=/test
+# Base path for Next.js subpath routing (/test-web)
+ARG BASE_PATH=/test-web
 ENV NEXT_PUBLIC_BASE_PATH=$BASE_PATH
+ENV NEXT_PUBLIC_API_URL=/test-api
 
 # Copy dependency manifests and source files
 COPY package*.json ./
@@ -43,8 +44,10 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_BASE_PATH=/test
-ENV FRONTEND_URL=https://server.lab.mooo.com/test
+ENV NEXT_PUBLIC_BASE_PATH=/test-web
+ENV NEXT_PUBLIC_API_URL=https://server.lab.mooo.com/test-api
+ENV FRONTEND_URL=https://server.lab.mooo.com/test-web
+ENV API_BASE_PATH=/test-api
 ENV API_INTERNAL_URL=http://localhost:4000
 ENV DB_PATH=/app/data/inventory.sqlite
 ENV UPLOADS_DIR=/app/data/uploads

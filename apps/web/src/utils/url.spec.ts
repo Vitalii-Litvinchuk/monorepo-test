@@ -1,91 +1,101 @@
-import { getBasePath, getApiUrl, getStaticUrl, getWsPath } from './url';
+import { getBasePath, getApiUrl, getStaticUrl, getWsPath, getApiBaseUrl } from './url';
 
-describe('Subpath & URL Helpers (https://path/test)', () => {
-  const originalEnv = process.env.NEXT_PUBLIC_BASE_PATH;
+describe('Subpath & URL Helpers from Environment Settings', () => {
+  const originalBasePath = process.env.NEXT_PUBLIC_BASE_PATH;
+  const originalApiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const originalWsPath = process.env.NEXT_PUBLIC_WS_PATH;
 
   afterEach(() => {
-    process.env.NEXT_PUBLIC_BASE_PATH = originalEnv;
+    if (originalBasePath !== undefined) {
+      process.env.NEXT_PUBLIC_BASE_PATH = originalBasePath;
+    } else {
+      delete process.env.NEXT_PUBLIC_BASE_PATH;
+    }
+
+    if (originalApiUrl !== undefined) {
+      process.env.NEXT_PUBLIC_API_URL = originalApiUrl;
+    } else {
+      delete process.env.NEXT_PUBLIC_API_URL;
+    }
+
+    if (originalWsPath !== undefined) {
+      process.env.NEXT_PUBLIC_WS_PATH = originalWsPath;
+    } else {
+      delete process.env.NEXT_PUBLIC_WS_PATH;
+    }
   });
 
-  describe('When NEXT_PUBLIC_BASE_PATH is /test', () => {
+  describe('Explicit environment variables (/test-web & /test-api)', () => {
     beforeEach(() => {
-      process.env.NEXT_PUBLIC_BASE_PATH = '/test';
+      process.env.NEXT_PUBLIC_BASE_PATH = '/test-web';
+      process.env.NEXT_PUBLIC_API_URL = 'https://server.lab.mooo.com/test-api';
+      process.env.NEXT_PUBLIC_WS_PATH = '/test-api/socket.io';
     });
 
-    it('should return /test as base path', () => {
-      expect(getBasePath()).toBe('/test');
+    it('should return /test-web as configured base path', () => {
+      expect(getBasePath()).toBe('/test-web');
     });
 
-    it('should prefix API endpoints with /test', () => {
-      expect(getApiUrl('/api/orders')).toBe('/test/api/orders');
-      expect(getApiUrl('api/auth/google')).toBe('/test/api/auth/google');
+    it('should return configured API base URL', () => {
+      expect(getApiBaseUrl()).toBe('https://server.lab.mooo.com/test-api');
     });
 
-    it('should prefix static assets with /test/static/', () => {
-      expect(getStaticUrl('uuid-123.png')).toBe('/test/static/uuid-123.png');
-      expect(getStaticUrl('/static/uuid-123.png')).toBe('/test/static/uuid-123.png');
+    it('should format API endpoints with configured API URL', () => {
+      expect(getApiUrl('/api/orders')).toBe('https://server.lab.mooo.com/test-api/api/orders');
+      expect(getApiUrl('api/auth/google')).toBe('https://server.lab.mooo.com/test-api/api/auth/google');
     });
 
-    it('should not duplicate /test if already present', () => {
-      expect(getApiUrl('/test/api/orders')).toBe('/test/api/orders');
-      expect(getStaticUrl('/test/static/uuid-123.png')).toBe('/test/static/uuid-123.png');
+    it('should format static assets with configured API URL', () => {
+      expect(getStaticUrl('uuid-123.png')).toBe('https://server.lab.mooo.com/test-api/static/uuid-123.png');
+      expect(getStaticUrl('/static/uuid-123.png')).toBe('https://server.lab.mooo.com/test-api/static/uuid-123.png');
     });
 
-    it('should format WebSocket path as /test/socket.io', () => {
-      expect(getWsPath()).toBe('/test/socket.io');
-    });
-
-    it('should pass through external full URLs unchanged', () => {
-      expect(getStaticUrl('https://example.com/photo.jpg')).toBe('https://example.com/photo.jpg');
-      expect(getApiUrl('https://external-api.com/v1')).toBe('https://external-api.com/v1');
+    it('should format WebSocket path from environment', () => {
+      expect(getWsPath()).toBe('/test-api/socket.io');
     });
   });
 
-  describe('When NEXT_PUBLIC_BASE_PATH is empty (default root)', () => {
+  describe('Default non-root settings (/test-web & /test-api)', () => {
     beforeEach(() => {
       delete process.env.NEXT_PUBLIC_BASE_PATH;
+      delete process.env.NEXT_PUBLIC_API_URL;
+      delete process.env.NEXT_PUBLIC_WS_PATH;
     });
 
-    it('should return empty string as base path', () => {
-      expect(getBasePath()).toBe('');
+    it('should default base path to /test-web', () => {
+      expect(getBasePath()).toBe('/test-web');
     });
 
-    it('should return standard /api/ paths', () => {
-      expect(getApiUrl('/api/orders')).toBe('/api/orders');
+    it('should default API URL to /test-api', () => {
+      expect(getApiBaseUrl()).toBe('/test-api');
     });
 
-    it('should return standard /static/ paths', () => {
-      expect(getStaticUrl('uuid-123.png')).toBe('/static/uuid-123.png');
-      expect(getStaticUrl('/static/uuid-123.png')).toBe('/static/uuid-123.png');
+    it('should format API endpoints to /test-api/api/...', () => {
+      expect(getApiUrl('/api/products')).toBe('/test-api/api/products');
     });
 
-    it('should return /socket.io for WebSocket path', () => {
-      expect(getWsPath()).toBe('/socket.io');
+    it('should format static assets to /test-api/static/...', () => {
+      expect(getStaticUrl('avatar.jpg')).toBe('/test-api/static/avatar.jpg');
+    });
+
+    it('should format WebSocket path to /test-api/socket.io', () => {
+      expect(getWsPath()).toBe('/test-api/socket.io');
     });
   });
 
-  describe('Browser runtime detection (window.location.pathname)', () => {
+  describe('Custom environment override (e.g. staging or different subpath)', () => {
     beforeEach(() => {
-      delete process.env.NEXT_PUBLIC_BASE_PATH;
+      process.env.NEXT_PUBLIC_BASE_PATH = '/custom-web';
+      process.env.NEXT_PUBLIC_API_URL = '/custom-api';
+      delete process.env.NEXT_PUBLIC_WS_PATH;
     });
 
-    it('should detect /test from window.location.pathname', () => {
-      window.history.pushState({}, 'Test', '/test/orders');
-      expect(getBasePath()).toBe('/test');
-      expect(getApiUrl('/api/products')).toBe('/test/api/products');
-      expect(getStaticUrl('image-uuid.png')).toBe('/test/static/image-uuid.png');
-      expect(getWsPath()).toBe('/test/socket.io');
-    });
-
-    it('should detect /test exact pathname', () => {
-      window.history.pushState({}, 'Test', '/test');
-      expect(getBasePath()).toBe('/test');
-    });
-
-    it('should not detect subpath if on root', () => {
-      window.history.pushState({}, 'Test', '/orders');
-      expect(getBasePath()).toBe('');
-      expect(getApiUrl('/api/products')).toBe('/api/products');
+    it('should use customized settings directly', () => {
+      expect(getBasePath()).toBe('/custom-web');
+      expect(getApiBaseUrl()).toBe('/custom-api');
+      expect(getApiUrl('/api/orders')).toBe('/custom-api/api/orders');
+      expect(getStaticUrl('photo.png')).toBe('/custom-api/static/photo.png');
+      expect(getWsPath()).toBe('/custom-api/socket.io');
     });
   });
 });
