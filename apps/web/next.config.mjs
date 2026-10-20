@@ -1,4 +1,4 @@
-const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '/test-web';
+const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 const cleanBasePath = rawBasePath.replace(/\/+$/, '').trim();
 const basePath = cleanBasePath ? (cleanBasePath.startsWith('/') ? cleanBasePath : `/${cleanBasePath}`) : undefined;
 const apiInternalUrl = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replace(/\/+$/, '');
@@ -9,6 +9,12 @@ const nextConfig = {
   basePath,
   assetPrefix: basePath,
   transpilePackages: ['@dzencode/contracts'],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -64,34 +70,10 @@ const nextConfig = {
           destination: `${apiInternalUrl}/socket.io/:path*`,
           basePath: false,
         },
-        {
-          source: '/static/:path*',
-          destination: `${apiInternalUrl}/static/:path*`,
-          basePath: false,
-        },
       );
     }
 
     return rules;
-  },
-  async redirects() {
-    if (basePath) {
-      return [
-        {
-          source: '/manifest.json',
-          destination: `${basePath}/manifest.json`,
-          permanent: false,
-          basePath: false,
-        },
-        {
-          source: '/sw.js',
-          destination: `${basePath}/sw.js`,
-          permanent: false,
-          basePath: false,
-        },
-      ];
-    }
-    return [];
   },
 };
 

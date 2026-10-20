@@ -1,10 +1,9 @@
 version: '3.8'
 
 # ==============================================================================
-# Portainer Stack Template: Inventory Orders & Products
-# Domain: https://server.lab.mooo.com
-# Web UI Route:  /test-web (https://server.lab.mooo.com/test-web)
-# Backend Route: /test-api (https://server.lab.mooo.com/test-api)
+# Portainer Stack: Inventory Orders & Products (Nginx Relative Subpaths)
+# Web UI Route:  /test-web
+# Backend Route: /test-api
 # Image: advanceddocker/monorepo-test:v.1
 # ==============================================================================
 
@@ -20,22 +19,13 @@ services:
     ports:
       - "4000:4000"
     environment:
-      # Application environment & ports
       - NODE_ENV=production
       - PORT=4000
       - API_BASE_PATH=/test-api
-
-      # URL of Frontend where OAuth and redirects should land
-      - FRONTEND_URL=https://server.lab.mooo.com/test-web
-
-      # Database & Persistence (Mounted to named volume)
+      - FRONTEND_URL=/test-web
       - DB_PATH=/app/data/inventory.sqlite
       - UPLOADS_DIR=/app/data/uploads
-
-      # JWT Secret
       - JWT_SECRET=dzencode-enterprise-production-jwt-secret-2026
-
-      # Google OAuth 2.0 Credentials (Demo active by default; replace with real credentials)
       - GOOGLE_CLIENT_ID=mock-google-client-id.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=mock-google-client-secret
       - GOOGLE_CALLBACK_URL=https://server.lab.mooo.com/test-api/api/auth/google/callback
@@ -53,18 +43,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Subpath configuration for Next.js Web
       - NODE_ENV=production
       - PORT=3000
       - NEXT_PUBLIC_BASE_PATH=/test-web
       - BASE_PATH=/test-web
-
-      # Explicit backend API & WebSocket addresses
-      - NEXT_PUBLIC_API_URL=https://server.lab.mooo.com/test-api
-      - NEXT_PUBLIC_WS_URL=https://server.lab.mooo.com
+      - NEXT_PUBLIC_API_URL=/test-api
       - NEXT_PUBLIC_WS_PATH=/test-api/socket.io
-
-      # Internal Docker network URL to API for Server-Side Rendering
       - API_INTERNAL_URL=http://inventory-api:4000
     depends_on:
       - inventory-api

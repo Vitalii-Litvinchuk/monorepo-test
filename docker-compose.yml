@@ -1,9 +1,9 @@
 version: '3.8'
 
 # ==============================================================================
-# Docker Compose: Inventory Orders & Products
-# Frontend: http://localhost:3000/test-web
-# Backend:  http://localhost:4000/test-api
+# Docker Compose: Inventory Orders & Products (Relative Subpaths)
+# Frontend: /test-web (:3000)
+# Backend:  /test-api (:4000)
 # ==============================================================================
 
 services:
@@ -13,6 +13,7 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_PATH: /test-web
+        API_URL: /test-api
     image: advanceddocker/monorepo-test:v.1
     container_name: inventory_api
     restart: unless-stopped
@@ -23,7 +24,7 @@ services:
       - NODE_ENV=production
       - PORT=4000
       - API_BASE_PATH=/test-api
-      - FRONTEND_URL=http://localhost:3000/test-web
+      - FRONTEND_URL=/test-web
       - DB_PATH=/app/data/inventory.sqlite
       - UPLOADS_DIR=/app/data/uploads
       - JWT_SECRET=dzencode-enterprise-production-jwt-secret-2026
@@ -39,6 +40,7 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_PATH: /test-web
+        API_URL: /test-api
     image: advanceddocker/monorepo-test:v.1
     container_name: inventory_web
     restart: unless-stopped
@@ -50,8 +52,7 @@ services:
       - PORT=3000
       - NEXT_PUBLIC_BASE_PATH=/test-web
       - BASE_PATH=/test-web
-      - NEXT_PUBLIC_API_URL=http://localhost:4000/test-api
-      - NEXT_PUBLIC_WS_URL=http://localhost:4000
+      - NEXT_PUBLIC_API_URL=/test-api
       - NEXT_PUBLIC_WS_PATH=/test-api/socket.io
       - API_INTERNAL_URL=http://inventory-api:4000
     depends_on:

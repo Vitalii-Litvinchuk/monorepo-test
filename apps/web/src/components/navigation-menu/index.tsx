@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Settings } from 'lucide-react';
 import styles from './navigation-menu.module.scss';
 import { useAppSelector } from '../../store';
-import { getStaticUrl } from '../../utils/url';
+import { getBasePath, getStaticUrl } from '../../utils/url';
 import { useTranslation } from '../../i18n';
 
 export const NavigationMenu: React.FC = () => {
@@ -46,7 +46,10 @@ export const NavigationMenu: React.FC = () => {
       <ul className={styles.navList}>
         {navLinks.map((link) => {
           const currentPath = pathname || '';
-          const normPath = currentPath.startsWith('/test') ? currentPath.replace(/^\/test/, '') || '/' : currentPath;
+          const basePath = getBasePath();
+          const normPath = basePath && currentPath.startsWith(basePath)
+            ? currentPath.slice(basePath.length) || '/'
+            : currentPath;
           const isActive = normPath === link.href || (normPath && normPath.startsWith(`${link.href}/`));
           return (
             <li key={link.href} className={styles.navItem}>
