@@ -8,8 +8,10 @@
 **/coverage
 **/*.sqlite
 **/*.sqlite-journal
-**/uploads
-**/data
+/uploads
+/data
+apps/api/uploads
+apps/api/data
 **/.DS_Store
 **/.env.local
 **/.env*.local
