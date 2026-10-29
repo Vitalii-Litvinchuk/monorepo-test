@@ -30,6 +30,7 @@ ARG BASE_PATH=/test-web
 ARG API_URL=/test-api
 ENV NEXT_PUBLIC_BASE_PATH=$BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$API_URL
+ENV NEXT_PUBLIC_WS_URL=""
 ENV NEXT_PUBLIC_WS_PATH=${API_URL}/socket.io
 
 # 5. Build all workspaces natively on host CPU and remove 600MB+ of build caches & devDeps

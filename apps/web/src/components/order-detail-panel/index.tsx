@@ -66,13 +66,13 @@ export const OrderDetailPanel: React.FC<OrderDetailPanelProps> = ({
               <div className={styles.photoContainer}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={getStaticUrl(product.photo) || '/static/default-product.svg'}
+                  src={getStaticUrl(product.photo) || getStaticUrl('default-product.svg')}
                   alt={product.title}
                   className={styles.productPhoto}
                   loading="lazy"
                   decoding="async"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/static/default-product.svg';
+                    (e.target as HTMLImageElement).src = getStaticUrl('default-product.svg');
                   }}
                 />
               </div>

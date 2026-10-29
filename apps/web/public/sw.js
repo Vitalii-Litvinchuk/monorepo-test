@@ -1,12 +1,11 @@
-const CACHE_NAME = 'inventory-pwa-cache-v1';
+const CACHE_NAME = 'inventory-pwa-cache-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/orders',
-  '/products',
-  '/groups',
-  '/manifest.json',
-  '/inventory-logo.png',
-  '/static/default-product.svg',
+  './',
+  './orders',
+  './products',
+  './groups',
+  './manifest.json',
+  './static/default-product.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -30,7 +29,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/api') || url.pathname.startsWith('/graphql') || url.pathname.startsWith('/socket.io')) {
+  if (
+    url.pathname.includes('/api/') ||
+    url.pathname.endsWith('/graphql') ||
+    url.pathname.includes('/socket.io')
+  ) {
     return;
   }
 

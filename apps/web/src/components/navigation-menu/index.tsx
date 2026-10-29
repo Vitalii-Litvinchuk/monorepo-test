@@ -36,6 +36,7 @@ export const NavigationMenu: React.FC = () => {
         />
         <Link
           href="/settings"
+          prefetch={false}
           className={styles.settingsButton}
           title={t.nav.userSettings}
         >
@@ -55,6 +56,7 @@ export const NavigationMenu: React.FC = () => {
             <li key={link.href} className={styles.navItem}>
               <Link
                 href={link.href}
+                prefetch={false}
                 className={`${styles.navLink} ${isActive ? styles.activeLink : ''}`}
               >
                 {link.label}

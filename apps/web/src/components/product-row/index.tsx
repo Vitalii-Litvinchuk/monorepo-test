@@ -68,7 +68,8 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
     </div>
   );
 
-  const photoUrl = getStaticUrl(product.photo) || '/static/default-product.svg';
+  const defaultPhotoUrl = getStaticUrl('default-product.svg');
+  const photoUrl = getStaticUrl(product.photo) || defaultPhotoUrl;
 
   if (viewMode === 'classic-scroll') {
     // Exact match to products-list.png layout (2542px width)
@@ -87,7 +88,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
             loading="lazy"
             decoding="async"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/static/default-product.svg';
+              (e.target as HTMLImageElement).src = defaultPhotoUrl;
             }}
           />
         </div>
@@ -200,7 +201,7 @@ export const ProductRow: React.FC<ProductRowProps> = React.memo(({
           loading="lazy"
           decoding="async"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/static/default-product.svg';
+            (e.target as HTMLImageElement).src = defaultPhotoUrl;
           }}
         />
       </div>
