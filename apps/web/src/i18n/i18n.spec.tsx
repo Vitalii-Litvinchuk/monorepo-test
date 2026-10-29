@@ -83,7 +83,7 @@ describe('i18n System Tests', () => {
     expect(screen.getByText('SETTINGS')).toBeTruthy();
   });
 
-  it('switches language directly via TopMenu language buttons', () => {
+  it('switches language directly via TopMenu language buttons and updates document lang attributes for Zakon font activation', () => {
     const store = configureStore({
       reducer: {
         ui: uiReducer,
@@ -102,11 +102,22 @@ describe('i18n System Tests', () => {
     fireEvent.click(uaBtn);
 
     expect(store.getState().ui.language).toBe('ua');
+    expect(document.documentElement.lang).toBe('uk');
+    expect(document.documentElement.dataset.lang).toBe('ua');
 
     const enBtn = screen.getByRole('button', { name: 'EN' });
     fireEvent.click(enBtn);
 
     expect(store.getState().ui.language).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+    expect(document.documentElement.dataset.lang).toBe('en');
+
+    const ruBtn = screen.getByRole('button', { name: 'RU' });
+    fireEvent.click(ruBtn);
+
+    expect(store.getState().ui.language).toBe('ru');
+    expect(document.documentElement.lang).toBe('ru');
+    expect(document.documentElement.dataset.lang).toBe('ru');
   });
 
   describe('Product Types i18n & formatProductType', () => {

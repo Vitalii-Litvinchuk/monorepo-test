@@ -32,6 +32,10 @@ export const uiSlice = createSlice({
       if (typeof window !== 'undefined') {
         localStorage.setItem('app_language', action.payload);
       }
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = action.payload === 'ua' ? 'uk' : action.payload;
+        document.documentElement.dataset.lang = action.payload;
+      }
     },
     setGlobalSearch: (state, action: PayloadAction<string>) => {
       state.globalSearch = action.payload;

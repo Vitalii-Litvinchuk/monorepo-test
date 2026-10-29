@@ -15,11 +15,14 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({
     // Hydrate i18n language preference from localStorage
     try {
       const savedLang = localStorage.getItem('app_language') as Language | null;
-      if (savedLang && (savedLang === 'ru' || savedLang === 'ua' || savedLang === 'en')) {
-        store.dispatch(setLanguage(savedLang));
-        if (typeof document !== 'undefined') {
-          document.documentElement.lang = savedLang === 'ua' ? 'uk' : savedLang;
-        }
+      const activeLang: Language =
+        savedLang && (savedLang === 'ru' || savedLang === 'ua' || savedLang === 'en')
+          ? savedLang
+          : store.getState().ui.language;
+      store.dispatch(setLanguage(activeLang));
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = activeLang === 'ua' ? 'uk' : activeLang;
+        document.documentElement.dataset.lang = activeLang;
       }
 
       const savedViewMode = localStorage.getItem('products_view_mode') as ProductTableViewMode | null;

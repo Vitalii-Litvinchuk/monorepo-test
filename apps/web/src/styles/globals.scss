@@ -1,3 +1,44 @@
+// Custom National Font: Zakon (supports Ukrainian and English)
+@font-face {
+  font-family: "Zakon";
+  src: url("../../public/fonts/Zakon-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zakon";
+  src: url("../../public/fonts/Zakon-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zakon";
+  src: url("../../public/fonts/Zakon-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zakon";
+  src: url("../../public/fonts/Zakon-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Zakon Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Roboto");
+  size-adjust: 100%;
+  ascent-override: 95%;
+  descent-override: 22%;
+}
+
 // Design Tokens extracted from reference screenshots (1920x672 / 1920x759 / 2930x672)
 :root {
   --color-bg-canvas: #f0f3f5;
@@ -14,11 +55,42 @@
   --color-danger: #e53935;
   --color-overlay-backdrop: rgba(84, 110, 122, 0.62);
 
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-zakon: "Zakon", "Zakon Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-base: var(--font-family-system);
   --header-height: 74px;
   --sidebar-width: 197px;
   --card-height: 72px;
   --card-gap: 10px;
+}
+
+html[lang="uk"],
+html[lang="ua"],
+html[lang="en"],
+html[data-lang="ua"],
+html[data-lang="uk"],
+html[data-lang="en"] {
+  --font-family-base: var(--font-family-zakon);
+
+  body {
+    font-size-adjust: from-font;
+  }
+}
+
+html[lang="ru"],
+html[data-lang="ru"] {
+  --font-family-base: var(--font-family-system);
+}
+
+@supports not (font-size-adjust: from-font) {
+  html[lang="uk"] body,
+  html[lang="ua"] body,
+  html[lang="en"] body,
+  html[data-lang="ua"] body,
+  html[data-lang="uk"] body,
+  html[data-lang="en"] body {
+    line-height: 1.45;
+  }
 }
 
 * {
@@ -50,6 +122,12 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
   font-family: inherit;
 }
 

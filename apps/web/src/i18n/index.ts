@@ -62,6 +62,7 @@ export function useTranslation() {
     dispatch(setLanguage(lang));
     if (typeof document !== 'undefined') {
       document.documentElement.lang = lang === 'ua' ? 'uk' : lang;
+      document.documentElement.dataset.lang = lang;
     }
   };
 
